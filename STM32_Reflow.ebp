@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBitz_project_file>
+	<EmBitzVersion release="1.11" revision="0" />
+	<FileVersion major="1" minor="0" />
+	<Project>
+		<Option title="STM32_Reflow" />
+		<Option pch_mode="2" />
+		<Option compiler="armgcc_eb" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\STM32_Reflow.elf" />
+				<Option object_output="obj\Debug\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-g3" />
+					<Add option="-O0" />
+					<Add option="-Wall" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Compiler>
+				<Cpp>
+					<Add option="-g3" />
+					<Add option="-O0" />
+					<Add option="-Wall" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Cpp>
+				<Assembler>
+					<Add option="-Wa,--gdwarf-2" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\STM32_Reflow.elf" />
+				<Option object_output="obj\Release\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-g2" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Compiler>
+				<Cpp>
+					<Add option="-O2" />
+					<Add option="-g2" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Cpp>
+				<Assembler>
+					<Add option="-Wa,--no-warn" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+		</Build>
+		<Device>
+			<Add option="$device=cortex-m0plus" />
+			<Add option="$lscript=./stm32l053r8_flash.ld" />
+			<Add option="$stack=0x0100" />
+			<Add option="$heap=0x0000" />
+		</Device>
+		<Compiler>
+			<Add option="-mfloat-abi=soft" />
+			<Add option="-fno-strict-aliasing" />
+			<Add symbol="USE_HAL_DRIVER" />
+			<Add symbol="STM32L053xx" />
+			<Add directory=".\inc" />
+			<Add directory=".\src" />
+			<Add directory=".\cmsis" />
+		</Compiler>
+		<Linker>
+			<Add option="-eb_lib=n" />
+			<Add option="-eb_start_files" />
+		</Linker>
+		<Unit filename="Drivers\CMSIS\Device\ST\STM32L0xx\Include\stm32l053xx.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_adc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_adc_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_comp.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_comp_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_conf_template.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_cortex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_crc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_crc_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_cryp.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_cryp_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_dac.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_dac_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_dma.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_firewall.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_flash.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_flash_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_flash_ramfunc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_gpio.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_gpio_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_i2c.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_i2c_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_i2s.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_irda.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_irda_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_iwdg.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_lcd.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_lptim.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_lptim_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_pcd.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_pcd_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_pwr.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_pwr_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_rcc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_rcc_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_rng.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_rtc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_rtc_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_smartcard.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_smartcard_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_smbus.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_spi.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_tim.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_tim_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_tsc.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_uart.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_uart_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_usart.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_usart_ex.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_wwdg.h" />
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_adc_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_comp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_comp_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_cortex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_crc_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_cryp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_cryp_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_dac_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_dma.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_firewall.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_flash_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_flash_ramfunc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_i2c_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_i2s.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_irda.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_iwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_lcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_lptim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_pcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_pcd_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_pwr_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_rcc_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_rtc_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_smartcard.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_smartcard_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_smbus.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_tim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_tim_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_tsc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_uart_ex.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_wwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="inc\main.h" />
+		<Unit filename="inc\old\stm32l0xx.h" />
+		<Unit filename="inc\old\system_stm32l0xx.h" />
+		<Unit filename="inc\stm32l0xx_hal_conf.h" />
+		<Unit filename="inc\stm32l0xx_it.h" />
+		<Unit filename="readme.txt" />
+		<Unit filename="src\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\startup_stm32l0xx.S">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\stm32l0xx_hal_msp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\stm32l0xx_it.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\system_stm32l0xx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32l053r8_flash.ld" />
+		<Unit filename="stm32l053r8_sram.ld" />
+		<Extensions>
+			<code_completion />
+			<debugger>
+				<target_debugging_settings target="Release" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBITZ}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics" gdb_before_conn="" gdb_after_conn="">
+						<family_options family_id="STMicroelectronics">
+							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+							<option opt_id="ID_RESET_TYPE" opt_value="System" />
+							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_RAM_EXEC" opt_value="0" />
+							<option opt_id="ID_VEC_TABLE" opt_value="1" />
+							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_DEV_ADDR" opt_value="" />
+							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+						</family_options>
+					</debug_interface>
+				</target_debugging_settings>
+				<target_debugging_settings target="Debug" active_interface="ST-link">
+					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBITZ}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics" gdb_before_conn="" gdb_after_conn="">
+						<family_options family_id="STMicroelectronics">
+							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
+							<option opt_id="ID_VECTOR_START" opt_value="0x08000000" />
+							<option opt_id="ID_RESET_TYPE" opt_value="System" />
+							<option opt_id="ID_LOAD_PROGRAM" opt_value="1" />
+							<option opt_id="ID_SEMIHOST_CHECK" opt_value="0" />
+							<option opt_id="ID_RAM_EXEC" opt_value="0" />
+							<option opt_id="ID_VEC_TABLE" opt_value="1" />
+							<option opt_id="ID_DONT_CONN_RESET" opt_value="0" />
+							<option opt_id="ID_ALL_MODE_DEBUG" opt_value="0" />
+							<option opt_id="ID_DEV_ADDR" opt_value="" />
+							<option opt_id="ID_VERBOSE_LEVEL" opt_value="3" />
+						</family_options>
+					</debug_interface>
+				</target_debugging_settings>
+			</debugger>
+			<envvars />
+		</Extensions>
+	</Project>
+</EmBitz_project_file>
