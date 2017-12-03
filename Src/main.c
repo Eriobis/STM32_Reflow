@@ -64,7 +64,7 @@ extern void SSD1306LibTest();
 int main(void)
 {
     /* MCU Configuration----------------------------------------------------------*/
-
+    uint8_t action = 1;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
@@ -82,6 +82,14 @@ int main(void)
     while (1)
     {
         MENU_Process();
+        if (action)
+        {
+            MENU_Action(ACTION_CLICK);
+            MENU_Action(ACTION_DOWN);
+            MENU_Action(ACTION_CLICK);
+            action = 0;
+        }
+
     }
 }
 

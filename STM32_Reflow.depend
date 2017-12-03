@@ -22,7 +22,7 @@
 
 1512244450 d:\documents\stm32_projects\stm32_reflow\inc\system_stm32l0xx.h
 
-1512276266 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
+1512329995 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
 	"main.h"
 	"stm32l0xx_hal.h"
 	"ssd1306.h"
@@ -496,7 +496,7 @@
 	<math.h>
 	"arm_math.h"
 
-1512263435 d:\documents\stm32_projects\stm32_reflow\inc\ssd1306.h
+1512326924 d:\documents\stm32_projects\stm32_reflow\inc\ssd1306.h
 	"stm32l0xx_hal.h"
 	"fonts.h"
 	"font5x7.h"
@@ -504,7 +504,7 @@
 1503987696 d:\documents\stm32_projects\stm32_reflow\inc\thegame.h
 	"ssd1306.h"
 
-1512263684 source:d:\documents\stm32_projects\stm32_reflow\src\ssd1306.c
+1512327066 source:d:\documents\stm32_projects\stm32_reflow\src\ssd1306.c
 	"ssd1306.h"
 	"drivers/lcd/bitmap/ssd1306/ssd1306.h"
 	"drivers/lcd/smallfonts.h"
@@ -590,10 +590,19 @@
 	<stdio.h>
 	<stdbool.h>
 
-1512277528 source:d:\documents\stm32_projects\stm32_reflow\src\menu.c
+1512330604 source:d:\documents\stm32_projects\stm32_reflow\src\menu.c
 	<stdlib.h>
 	<stdbool.h>
 	"menu.h"
+	"system.h"
 	"ssd1306.h"
 	"Fonts.h"
+
+1512330053 d:\documents\stm32_projects\stm32_reflow\inc\system.h
+	<stdint.h>
+	<stdio.h>
+	<stdbool.h>
+
+1512330149 source:d:\documents\stm32_projects\stm32_reflow\src\system.c
+	"stm32l0xx_hal.h"
 

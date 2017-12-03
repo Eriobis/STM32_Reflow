@@ -297,6 +297,24 @@ void ssd1306_DrawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color
 		ssd1306_DrawLine(	 x,   y1,   x1, y1, color);
 	}
 }
+
+/**************************************************************************/
+/*!
+    @brief Draws a filled rectangle
+*/
+/**************************************************************************/
+void ssd1306_FillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color)
+{
+	uint8_t x0, x1, y1;
+
+	x0 = x;
+	x1 = x + w;
+	y1 = y + h;
+	for(; y < y1; y++)
+			for(x = x0; x < x1; x++)
+					ssd1306_DrawPixel( x, y, color);
+}
+
   /**************************************************************************/
 /*!
     @brief Draw a character
