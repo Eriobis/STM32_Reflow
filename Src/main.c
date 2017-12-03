@@ -42,6 +42,7 @@
 #include "stm32l0xx_hal.h"
 #include "ssd1306.h"
 #include "Fonts.h"
+#include "menu.h"
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -76,15 +77,11 @@ int main(void)
     ssd1306_Init();
     HAL_Delay(1000);
 
-    ssd1306_SetCursor(0,0);
-    ssd1306_WriteString("Hello World",Font_7x10,White);
-    ssd1306_SetCursor(0,20);
-    ssd1306DrawString(0, 20, "test", 2, White);
-    ssd1306_UpdateScreen();
+    MENU_Init();
 
     while (1)
     {
-
+        MENU_Process();
     }
 }
 

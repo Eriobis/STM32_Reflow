@@ -2,3 +2,9 @@
 *.d
 
 *.o
+
+bin/Debug/STM32_Reflow\.elf
+
+*.hex
+
+bin/Debug/STM32_Reflow\.map

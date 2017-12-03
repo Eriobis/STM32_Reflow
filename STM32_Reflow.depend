@@ -22,11 +22,12 @@
 
 1512244450 d:\documents\stm32_projects\stm32_reflow\inc\system_stm32l0xx.h
 
-1512263473 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
+1512276266 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
 	"main.h"
 	"stm32l0xx_hal.h"
 	"ssd1306.h"
 	"Fonts.h"
+	"menu.h"
 
 1512244690 source:d:\documents\stm32_projects\stm32_reflow\drivers\stm32l0xx_hal_driver\src\stm32l0xx_hal.c
 	"stm32l0xx_hal.h"
@@ -583,4 +584,16 @@
 1512262524 source:d:\documents\stm32_projects\stm32_reflow\src\fonts.c
 	"fonts.h"
 	"font5x7.h"
+
+1512276138 d:\documents\stm32_projects\stm32_reflow\inc\menu.h
+	<stdint.h>
+	<stdio.h>
+	<stdbool.h>
+
+1512277528 source:d:\documents\stm32_projects\stm32_reflow\src\menu.c
+	<stdlib.h>
+	<stdbool.h>
+	"menu.h"
+	"ssd1306.h"
+	"Fonts.h"
 
