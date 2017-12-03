@@ -73,6 +73,7 @@
 			<Add option="-fno-strict-aliasing" />
 			<Add symbol="USE_HAL_DRIVER" />
 			<Add symbol="STM32L053xx" />
+			<Add symbol="ARM_MATH_CM0" />
 			<Add directory=".\inc" />
 			<Add directory=".\src" />
 			<Add directory=".\cmsis" />
@@ -82,6 +83,23 @@
 			<Add option="-eb_start_files" />
 		</Linker>
 		<Unit filename="Drivers\CMSIS\Device\ST\STM32L0xx\Include\stm32l053xx.h" />
+		<Unit filename="Drivers\CMSIS\Include\arm_common_tables.h" />
+		<Unit filename="Drivers\CMSIS\Include\arm_const_structs.h" />
+		<Unit filename="Drivers\CMSIS\Include\arm_math.h" />
+		<Unit filename="Drivers\CMSIS\Include\cmsis_armcc.h" />
+		<Unit filename="Drivers\CMSIS\Include\cmsis_armcc_V6.h" />
+		<Unit filename="Drivers\CMSIS\Include\cmsis_gcc.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cm0.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cm0plus.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cm3.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cm4.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cm7.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cmFunc.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cmInstr.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_cmSimd.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_sc000.h" />
+		<Unit filename="Drivers\CMSIS\Include\core_sc300.h" />
+		<Unit filename="Drivers\CMSIS\Lib\ARM\arm_cortexM0l_math.lib" />
 		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal.h" />
 		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_adc.h" />
 		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_adc_ex.h" />
@@ -267,22 +285,35 @@
 		<Unit filename="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_wwdg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="inc\main.h" />
-		<Unit filename="inc\old\stm32l0xx.h" />
-		<Unit filename="inc\old\system_stm32l0xx.h" />
-		<Unit filename="inc\stm32l0xx_hal_conf.h" />
-		<Unit filename="inc\stm32l0xx_it.h" />
+		<Unit filename="Inc\font5x7.h" />
+		<Unit filename="Inc\fonts.h" />
+		<Unit filename="Inc\main.h" />
+		<Unit filename="Inc\old\stm32l0xx.h" />
+		<Unit filename="Inc\old\system_stm32l0xx.h" />
+		<Unit filename="Inc\ssd1306.h" />
+		<Unit filename="Inc\stm32l0xx_hal_conf.h" />
+		<Unit filename="Inc\stm32l0xx_it.h" />
+		<Unit filename="Inc\thegame.h" />
 		<Unit filename="readme.txt" />
-		<Unit filename="src\main.c">
+		<Unit filename="Src\font5x7.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\fonts.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\ssd1306.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src\startup_stm32l0xx.S">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\stm32l0xx_hal_msp.c">
+		<Unit filename="Src\stm32l0xx_hal_msp.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\stm32l0xx_it.c">
+		<Unit filename="Src\stm32l0xx_it.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src\system_stm32l0xx.c">
@@ -293,7 +324,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger>
-				<target_debugging_settings target="Release" active_interface="ST-link">
+				<target_debugging_settings target="Debug" active_interface="ST-link">
 					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBITZ}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics" gdb_before_conn="" gdb_after_conn="">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />
@@ -310,7 +341,7 @@
 						</family_options>
 					</debug_interface>
 				</target_debugging_settings>
-				<target_debugging_settings target="Debug" active_interface="ST-link">
+				<target_debugging_settings target="Release" active_interface="ST-link">
 					<debug_interface interface_id="ST-link" ip_address="localhost" ip_port="4242" path="${EMBITZ}\share\contrib" executable="STLinkGDB.exe" description="" dont_start_server="false" backoff_time="1000" options="0" reg_filter="0" active_family="STMicroelectronics" gdb_before_conn="" gdb_after_conn="">
 						<family_options family_id="STMicroelectronics">
 							<option opt_id="ID_JTAG_SWD" opt_value="swd" />

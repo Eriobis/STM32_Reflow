@@ -1,7 +1,7 @@
 # depslib dependency file v1.0
 1512244450 source:d:\documents\stm32_projects\stm32_reflow\src\startup_stm32l0xx.s
 
-1512244450 source:d:\documents\stm32_projects\stm32_reflow\src\system_stm32l0xx.c
+1512244663 source:d:\documents\stm32_projects\stm32_reflow\src\system_stm32l0xx.c
 	"stm32l0xx.h"
 
 1512244450 d:\documents\stm32_projects\stm32_reflow\inc\stm32l0xx.h
@@ -22,9 +22,11 @@
 
 1512244450 d:\documents\stm32_projects\stm32_reflow\inc\system_stm32l0xx.h
 
-1512246496 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
+1512263473 source:d:\documents\stm32_projects\stm32_reflow\src\main.c
 	"main.h"
 	"stm32l0xx_hal.h"
+	"ssd1306.h"
+	"Fonts.h"
 
 1512244690 source:d:\documents\stm32_projects\stm32_reflow\drivers\stm32l0xx_hal_driver\src\stm32l0xx_hal.c
 	"stm32l0xx_hal.h"
@@ -472,7 +474,7 @@
 1512246496 source:d:\documents\stm32_projects\stm32_reflow\src\stm32l0xx_hal_msp.c
 	"stm32l0xx_hal.h"
 
-1512246496 source:d:\documents\stm32_projects\stm32_reflow\src\stm32l0xx_it.c
+1512249823 source:d:\documents\stm32_projects\stm32_reflow\src\stm32l0xx_it.c
 	"stm32l0xx_hal.h"
 	"stm32l0xx.h"
 	"stm32l0xx_it.h"
@@ -482,4 +484,103 @@
 	"main.h"
 
 1512246802 source:d:\documents\stm32_projects\stm32_reflow\src\startup_stm32l053xx.s
+
+1503987696 source:d:\documents\stm32_projects\stm32_reflow\src\font5x7.c
+
+1512250950 source:d:\documents\stm32_projects\stm32_reflow\src\ssd1306libtest.c
+	"stm32l0xx_hal.h"
+	"ssd1306.h"
+	"stdlib.h"
+	"thegame.h"
+	<math.h>
+	"arm_math.h"
+
+1512263435 d:\documents\stm32_projects\stm32_reflow\inc\ssd1306.h
+	"stm32l0xx_hal.h"
+	"fonts.h"
+	"font5x7.h"
+
+1503987696 d:\documents\stm32_projects\stm32_reflow\inc\thegame.h
+	"ssd1306.h"
+
+1512263684 source:d:\documents\stm32_projects\stm32_reflow\src\ssd1306.c
+	"ssd1306.h"
+	"drivers/lcd/bitmap/ssd1306/ssd1306.h"
+	"drivers/lcd/smallfonts.h"
+
+1512249673 d:\documents\stm32_projects\stm32_reflow\inc\font5x7.h
+	"stm32l0xx_hal.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cm0plus.h
+	<stdint.h>
+	"core_cmInstr.h"
+	"core_cmFunc.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cminstr.h
+	"cmsis_armcc.h"
+	"cmsis_armcc_V6.h"
+	"cmsis_gcc.h"
+	<cmsis_iar.h>
+	<cmsis_ccs.h>
+	<cmsis_csm.h>
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\cmsis_armcc.h
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\cmsis_armcc_v6.h
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\cmsis_gcc.h
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cmfunc.h
+	"cmsis_armcc.h"
+	"cmsis_armcc_V6.h"
+	"cmsis_gcc.h"
+	<cmsis_iar.h>
+	<cmsis_ccs.h>
+	<cmsis_csm.h>
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\arm_math.h
+	"core_cm7.h"
+	"core_cm4.h"
+	"core_cm3.h"
+	"core_cm0.h"
+	"core_cm0plus.h"
+	"string.h"
+	"math.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cm7.h
+	<stdint.h>
+	"core_cmInstr.h"
+	"core_cmFunc.h"
+	"core_cmSimd.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cmsimd.h
+	"cmsis_armcc.h"
+	"cmsis_armcc_V6.h"
+	"cmsis_gcc.h"
+	<cmsis_iar.h>
+	<cmsis_ccs.h>
+	<cmsis_csm.h>
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cm4.h
+	<stdint.h>
+	"core_cmInstr.h"
+	"core_cmFunc.h"
+	"core_cmSimd.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cm3.h
+	<stdint.h>
+	"core_cmInstr.h"
+	"core_cmFunc.h"
+
+1512244689 d:\documents\stm32_projects\stm32_reflow\drivers\cmsis\include\core_cm0.h
+	<stdint.h>
+	"core_cmInstr.h"
+	"core_cmFunc.h"
+
+1512262586 d:\documents\stm32_projects\stm32_reflow\inc\fonts.h
+	"stm32l0xx_hal.h"
+
+1512262524 source:d:\documents\stm32_projects\stm32_reflow\src\fonts.c
+	"fonts.h"
+	"font5x7.h"
 
