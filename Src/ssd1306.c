@@ -1,7 +1,6 @@
 
 #include"ssd1306.h"
 
-
 // Databuffer voor het scherm
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 

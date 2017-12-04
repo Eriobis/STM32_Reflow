@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "menu.h"
 #include "system.h"
 
@@ -67,7 +68,7 @@ typedef enum __MENU_CursorMode_e
 typedef struct __MENU_Item_t
 {
     char* title;
-    void (*callbackFnc)(uint16_t* val);
+    void (*callbackFnc)(uint16_t** val);
     MENU_LIST_e nextMenu;
     MENU_ItemType_e actionType;
     MENU_ItemUnit_e unit;
@@ -82,11 +83,11 @@ typedef struct __MENU_page_t
 
 /* Forward Declarations ---------------------------------------------------------------------------------------------*/
 
-static void MENU_PrintMenu(MENU_LIST_e menu);
-static void MENU_Goto(MENU_LIST_e menu);
-static void MENU_MainMenu();
-static void MENU_SettingMenu();
-
+static void MENU_PrintMenu          (MENU_LIST_e menu);
+static void MENU_Goto               (MENU_LIST_e menu);
+static void MENU_MainMenu           (void);
+static void MENU_SettingMenu        (void);
+static void MENU_EditVariableMenu   (void);
 /* Local Constants --------------------------------------------------------------------------------------------------*/
 
 const char cursorSymbol = '>';
@@ -102,14 +103,14 @@ const MENU_Item_t MENU_MainMenuItems[] =
 // Definition for the 'Settings'
 const MENU_Item_t MENU_SettingsMenuItems[] =
 {
-    { "../Main Menu",  NULL,                    MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
-    { "Preheat time",  SYS_GetPreHeatTimePtr,   SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
-    { "Preheat temp",  SYS_GetPreHeatTempPtr,   SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
-    { "Soak time",     SYS_GetSoakTimePtr,      SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
-    { "Soak temp",     SYS_GetSoakTempPtr,      SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
-    { "Reflow time",   SYS_GetReflowTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
-    { "Reflow temp",   SYS_GetReflowTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
-    { "Cooling time",  SYS_GetCoolingTimePtr,   SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
+    { "../Main Menu",  NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
+    { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
+    { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
+    { "Soak temp",     (void*)SYS_GetSoakTempPtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
+    { "Reflow time",   (void*)SYS_GetReflowTimePtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
+    { "Reflow temp",   (void*)SYS_GetReflowTempPtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
+    { "Cooling time",  (void*)SYS_GetCoolingTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
 };
 
 // Pages and items automatic creation
@@ -169,10 +170,11 @@ void MENU_PrintMenu(MENU_LIST_e page)
 
     FontDef Font = Font_7x10;
     xPos = Font.FontWidth + 1;
-    MENU_Item_t *itemList = menuItemList[page];
+    MENU_Item_t *itemList = (MENU_Item_t *)menuItemList[page];
     //Clear screen
     ssd1306_Fill(Black);
     //Write Page Title
+    xPos = (SSD1306_WIDTH/2) - (strlen(menuTitle[page])/2)*Font.FontWidth; //Center the string
     ssd1306_SetCursor(xPos,yPos);
     ssd1306_WriteString(menuTitle[page], Font_7x10, White);
     yPos += Font.FontHeight;
@@ -201,23 +203,26 @@ void MENU_PrintMenu(MENU_LIST_e page)
 
 void MENU_Goto(MENU_LIST_e nextPage)
 {
-        currentPage = nextPage;
-        menuNeedRefresh = true;
+    currentPage = nextPage;
+    menuNeedRefresh = true;
 }
 
 void MENU_EditVariableMenu()
 {
-    MENU_Item_t *itemList = menuItemList[currentPage];
-    MENU_Item_t *item = &itemList[currentPosition];
+    MENU_Item_t *itemList = (MENU_Item_t *)menuItemList[currentPage];
+    MENU_Item_t *item = (MENU_Item_t *)&itemList[currentPosition];
     char valueStr[16];
-
+    uint8_t xPos;
     sprintf(valueStr,"%u",*editVariablePtr);
     //Draw the frame overlay
-    ssd1306_DrawRect(5, 11, 120, 50, White);
-    ssd1306_SetCursor(10, 19);
+    ssd1306_DrawRect(5, 11, SSD1306_WIDTH-10, 50, White);
+    xPos = (SSD1306_WIDTH/2) - (strlen(item->title)/2)*Font_7x10.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 19);
     ssd1306_WriteString(item->title, Font_7x10, White);
-    ssd1306_SetCursor(55, 40);
+
     strcat(valueStr,unitSymbol[item->unit]);
+    xPos = (SSD1306_WIDTH/2) - (strlen(valueStr)/2)*Font_11x18.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 40);
     ssd1306_WriteString(valueStr, Font_11x18, White);
 }
 
@@ -236,6 +241,10 @@ void MENU_SettingMenu()
 
 void MENU_Init()
 {
+    //Init the oled module
+    ssd1306_Init();
+    HAL_Delay(250);
+
     currentPage = MAIN_MENU;
     menuNeedRefresh = true;
     cursorPosChanged = false;
@@ -256,8 +265,8 @@ void MENU_Process()
 
 void MENU_Action(MENU_Action_e action)
 {
-    MENU_Item_t *itemList = menuItemList[currentPage];
-    MENU_Item_t *item = &itemList[currentPosition];
+    MENU_Item_t *itemList = (MENU_Item_t *)menuItemList[currentPage];
+    MENU_Item_t *item = (MENU_Item_t *)&itemList[currentPosition];
     if ( cursorMode == MODE_NAVIGATE)
     {
         switch (action)
