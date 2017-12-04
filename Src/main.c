@@ -44,15 +44,24 @@
 #include "Fonts.h"
 #include "menu.h"
 
+typedef enum __ENCODER_State_e
+{
+    ENC_STATE_UNKNOWN,
+    ENC_STATE_11,
+    ENC_STATE_01,
+    ENC_STATE_00,
+    ENC_STATE_10,
+}ENCODER_State_e;
+
 /* Private variables ---------------------------------------------------------*/
 
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
-
-/* Private variables ---------------------------------------------------------*/
+ENCODER_State_e encoderState;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void EncoderRead(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
@@ -64,7 +73,10 @@ extern void SSD1306LibTest();
 int main(void)
 {
     /* MCU Configuration----------------------------------------------------------*/
-    uint8_t action = 1;
+    uint8_t action = 0;
+    uint32_t encoderTimer;
+    uint32_t encoderSwitchTimer;
+    encoderState = ENC_STATE_UNKNOWN;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
@@ -79,6 +91,20 @@ int main(void)
     while (1)
     {
         MENU_Process();
+
+        if (HAL_GetTick() - encoderTimer > 5)
+        {
+            encoderTimer = HAL_GetTick();
+            EncoderRead();
+        }
+        if (HAL_GetTick() - encoderSwitchTimer > 100)
+        {
+            encoderSwitchTimer = HAL_GetTick();
+            if ( HAL_GPIO_ReadPin(ENCODER_SW_Port, ENCODER_SW_Pin) == GPIO_PIN_SET )
+            {
+                MENU_Action(ACTION_CLICK);
+            }
+        }
         if (action)
         {
             MENU_Action(ACTION_CLICK);
@@ -87,6 +113,77 @@ int main(void)
             action = 0;
         }
 
+    }
+}
+
+static void EncoderRead()
+{
+    GPIO_PinState val1, val2;
+    val1 = HAL_GPIO_ReadPin(ENCODER_A_Port,ENCODER_A_Pin);
+    val2 = HAL_GPIO_ReadPin(ENCODER_B_Port,ENCODER_B_Pin);
+
+    switch (encoderState)
+    {
+        case ENC_STATE_UNKNOWN :
+            if ( val1 && val2 )
+            {
+                encoderState = ENC_STATE_11;
+            }
+            else if ( val1 )
+            {
+                encoderState = ENC_STATE_01;
+            }
+            else if ( val2 )
+            {
+                encoderState = ENC_STATE_10;
+            }
+            else
+            {
+                encoderState = ENC_STATE_00;
+            }
+        break;
+        case ENC_STATE_00 :
+            if ( val1 )
+            {
+                encoderState = ENC_STATE_01;
+                MENU_Action(ACTION_DOWN);
+            }
+            else if ( val2 )
+            {
+                encoderState = ENC_STATE_10;
+                MENU_Action(ACTION_UP);
+            }
+        break;
+        case ENC_STATE_01 :
+            if ( !val1 )
+            {
+                encoderState = ENC_STATE_00;
+            }
+            else if ( val2 )
+            {
+                encoderState = ENC_STATE_11;
+            }
+        break;
+        case ENC_STATE_11 :
+            if ( !val1 )
+            {
+                encoderState = ENC_STATE_10;
+            }
+            else if ( !val2 )
+            {
+                encoderState = ENC_STATE_01;
+            }
+        break;
+        case ENC_STATE_10 :
+            if ( val1 )
+            {
+                encoderState = ENC_STATE_11;
+            }
+            else if ( !val2 )
+            {
+                encoderState = ENC_STATE_00;
+            }
+        break;
     }
 }
 
@@ -235,12 +332,45 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ENCODER SWITCH */
+    GPIO_InitStruct.Pin = ENCODER_SW_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ENCODER_SW_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : ENCODER KNOB */
+    GPIO_InitStruct.Pin = ENCODER_A_Pin | ENCODER_B_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(ENCODER_A_Port, &GPIO_InitStruct);
+
+    HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+    HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 }
 
+/**
+  * @brief  EXTI line detection callbacks.
+  * @param  GPIO_Pin: Specifies the pins connected to the EXTI line.
+  * @retval None
+  */
 
-/* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    switch (GPIO_Pin)
+    {
+        case  GPIO_PIN_1:
+            break;
+        case  GPIO_PIN_2:
+        case  GPIO_PIN_3:
+            break;
+        default:
+            break;
+    }
+}
 
-/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.

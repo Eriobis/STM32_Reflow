@@ -73,7 +73,7 @@ void SYS_Stop()
   */
 void SYS_GetPreHeatTimePtr (uint16_t** val)
 {
-    SYS_PreHeatTime = 33;
+    SYS_PreHeatTime = 30;
     *val = &SYS_PreHeatTime;
 }
 

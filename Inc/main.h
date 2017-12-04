@@ -59,6 +59,12 @@
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define ENCODER_A_Pin GPIO_PIN_2
+#define ENCODER_A_Port GPIOC
+#define ENCODER_B_Pin GPIO_PIN_3
+#define ENCODER_B_Port GPIOC
+#define ENCODER_SW_Pin GPIO_PIN_1
+#define ENCODER_SW_Port GPIOC
 
 /* ########################## Assert Selection ############################## */
 /**

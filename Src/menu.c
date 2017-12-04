@@ -15,7 +15,8 @@
 //          MENU TITLE,             MENU ID,      PARENTID,     MenuFonction        Item List
 #define X_MENU_CONFIG   \
     X_MENU( "-- Main Menu --",      MAIN_MENU,    NULL,         MENU_MainMenu,      MENU_MainMenuItems      )   \
-    X_MENU( "-- Settings --",       SETTING_MENU, MAIN_MENU,    MENU_SettingMenu,   MENU_SettingsMenuItems  )
+    X_MENU( "-- Settings --",       SETTING_MENU, MAIN_MENU,    MENU_SettingMenu,   MENU_SettingsMenuItems  )   \
+    X_MENU( "-- Info --",           INFO_MENU,    MAIN_MENU,    NULL,               MENU_InfoItems  )   \
 
     #define X_UNIT_TYPE   \
     X_UNIT( "°C",   UNIT_DEG )   \
@@ -95,9 +96,10 @@ const char cursorSymbol = '>';
 // Definition for the 'Main Menu'
 const MENU_Item_t MENU_MainMenuItems[] =
 {
-    { "Settings",   NULL,       SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Start",      SYS_Start,  MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Stop",       SYS_Stop,   MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT }
+    { "View Settings",      NULL,       INFO_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Edit Settings",      NULL,       SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Start",              SYS_Start,  MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Stop",               SYS_Stop,   MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT }
 };
 
 // Definition for the 'Settings'
@@ -111,6 +113,10 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
     { "Reflow time",   (void*)SYS_GetReflowTimePtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Reflow temp",   (void*)SYS_GetReflowTempPtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Cooling time",  (void*)SYS_GetCoolingTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
+};
+
+const MENU_Item_t MENU_InfoItems[] =
+{
 };
 
 // Pages and items automatic creation
@@ -213,7 +219,7 @@ void MENU_EditVariableMenu()
     MENU_Item_t *item = (MENU_Item_t *)&itemList[currentPosition];
     char valueStr[16];
     uint8_t xPos;
-    sprintf(valueStr,"%u",*editVariablePtr);
+    sprintf(valueStr,"% 4u",*editVariablePtr);
     //Draw the frame overlay
     ssd1306_DrawRect(5, 11, SSD1306_WIDTH-10, 50, White);
     xPos = (SSD1306_WIDTH/2) - (strlen(item->title)/2)*Font_7x10.FontWidth; //Center the string
@@ -255,7 +261,7 @@ void MENU_Init()
 void MENU_Process()
 {
 
-    if ( menuNeedRefresh || cursorPosChanged)
+    if ( menuNeedRefresh || cursorPosChanged )
     {
         MENU_PrintMenu(currentPage);
         menuNeedRefresh = false;
@@ -272,18 +278,18 @@ void MENU_Action(MENU_Action_e action)
         switch (action)
         {
             case  ACTION_UP:
-                if (currentPosition > 1)
+                if (currentPosition + 1 < menuNbOfItems[currentPage])
                 {
                     lastPosition = currentPosition;
-                    currentPosition --;
+                    currentPosition ++;
                     cursorPosChanged = true;
                 }
                 break;
             case  ACTION_DOWN:
-                if (currentPosition < menuNbOfItems[currentPage])
+                if (currentPosition > 0)
                 {
                     lastPosition = currentPosition;
-                    currentPosition ++;
+                    currentPosition --;
                     cursorPosChanged = true;
                 }
                 break;
@@ -319,12 +325,14 @@ void MENU_Action(MENU_Action_e action)
                     if (*editVariablePtr < 65530)
                     {
                         *editVariablePtr += 10;
+                        menuNeedRefresh = true;
                     }
                     break;
                 case  ACTION_DOWN:
                     if (*editVariablePtr > 10)
                     {
                         *editVariablePtr -= 10;
+                        menuNeedRefresh = true;
                     }
                     break;
                 case  ACTION_CLICK:
