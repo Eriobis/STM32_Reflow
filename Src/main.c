@@ -73,9 +73,9 @@ extern void SSD1306LibTest();
 int main(void)
 {
     /* MCU Configuration----------------------------------------------------------*/
-    uint8_t action = 0;
     uint32_t encoderTimer;
     uint32_t encoderSwitchTimer;
+    uint32_t encoderSwitchPeriod;
     encoderState = ENC_STATE_UNKNOWN;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -88,6 +88,8 @@ int main(void)
 
     MENU_Init();
 
+    encoderSwitchPeriod = 100;
+
     while (1)
     {
         MENU_Process();
@@ -97,22 +99,16 @@ int main(void)
             encoderTimer = HAL_GetTick();
             EncoderRead();
         }
-        if (HAL_GetTick() - encoderSwitchTimer > 100)
+        if (HAL_GetTick() - encoderSwitchTimer > encoderSwitchPeriod)
         {
             encoderSwitchTimer = HAL_GetTick();
+            encoderSwitchPeriod = 100;
             if ( HAL_GPIO_ReadPin(ENCODER_SW_Port, ENCODER_SW_Pin) == GPIO_PIN_SET )
             {
                 MENU_Action(ACTION_CLICK);
+                encoderSwitchPeriod = 500;
             }
         }
-        if (action)
-        {
-            MENU_Action(ACTION_CLICK);
-            MENU_Action(ACTION_DOWN);
-            MENU_Action(ACTION_CLICK);
-            action = 0;
-        }
-
     }
 }
 
