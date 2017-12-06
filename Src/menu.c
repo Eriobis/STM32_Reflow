@@ -71,7 +71,7 @@ typedef enum __MENU_CursorMode_e
 typedef struct __MENU_Item_t
 {
     char* title;
-    void (*callbackFnc)(uint16_t** val);
+    void (*callbackFnc)(void* arg);
     MENU_LIST_e nextMenu;
     MENU_ItemType_e actionType;
     MENU_ItemUnit_e unit;
@@ -416,7 +416,8 @@ void MENU_Action(MENU_Action_e action)
                     case  ITEM_EDIT_VARIABLE:
                     if ( item->callbackFnc != NULL )
                     {
-                        item->callbackFnc(&editVariablePtr);
+                        // The callback fnc must set the address of the variable to be modified
+                        item->callbackFnc((void *)&editVariablePtr);
                         cursorMode = MODE_EDIT;
                         menuNeedRefresh = true;
                     }
