@@ -8,6 +8,8 @@
 /* Includes ---------------------------------------------------------------------------------------------------------*/
 
 #include "stm32l0xx_hal.h"
+#include "pid.h"
+#include "menu.h"
 
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
 #define NB_OF_TEMP_POINTS   128
@@ -39,8 +41,21 @@ static uint16_t SYS_SoakTemp = 120;
 static uint16_t SYS_ReflowTime = 180;
 static uint16_t SYS_ReflowTemp = 245;
 static uint16_t SYS_CoolingTime = 60;
+static bool     SYS_Started;
 
 SYS_Profile_e profile1;
+
+
+// Structure to strore PID data and pointer to PID structure
+struct pid_controller ctrldata;
+PID_t pid;
+
+// Control loop input,output and setpoint variables
+float input = 0, output = 0;
+float setpoint = 0;
+
+// Control loop gains
+float kp = 2.5, ki = 1.0, kd = 1.0;
 
 /* Local Functions --------------------------------------------------------------------------------------------------*/
 
@@ -130,6 +145,8 @@ void SYS_GenerateProfile(SYS_Profile_e *profile)
 void SYS_Start()
 {
     SYS_GenerateProfile(&profile1);
+    MENU_PrintDots(profile1.SetpointArray, 128);
+    SYS_Started = true;
 }
 
 /**
@@ -144,7 +161,7 @@ void SYS_Start()
   */
 void SYS_Stop()
 {
-
+    SYS_Started = false;
 }
 
 /**
@@ -265,6 +282,53 @@ void SYS_GetCoolingTimePtr (uint16_t** val)
 uint16_t SYS_GetTotalTime()
 {
     return  (SYS_PreHeatTime + SYS_SoakTime +  SYS_ReflowTime + SYS_CoolingTime);
+}
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
+bool SYS_IsSystemStarted()
+{
+    return SYS_Started;
+}
+
+void SYS_Init()
+{
+    SYS_Started = false;
+
+	// Prepare PID controller for operation
+	pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
+	// Set controler output limits from 0 to 100
+	pid_limits(pid, 0, 100);
+	// Allow PID to compute and change output
+	pid_auto(pid);
+
+}
+
+void SYS_Process()
+{
+    float actualTemp;
+    if(SYS_Started)
+    {
+        // Get actual temperature
+
+		// Check if need to compute PID
+		if (pid_need_compute(pid)) {
+			// Read process feedback
+			input = actualTemp;
+			// Compute new PID output value
+			pid_compute(pid);
+			//Change actuator value
+			//Output is updated here so use it !
+		}
+    }
 }
 
 uint16_t SYS_GetPreHeatTime() { return SYS_PreHeatTime; }

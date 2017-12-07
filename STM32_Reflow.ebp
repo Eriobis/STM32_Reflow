@@ -288,9 +288,11 @@
 		<Unit filename="Inc\font5x7.h" />
 		<Unit filename="Inc\fonts.h" />
 		<Unit filename="Inc\main.h" />
+		<Unit filename="Inc\max31855.h" />
 		<Unit filename="Inc\menu.h" />
 		<Unit filename="Inc\old\stm32l0xx.h" />
 		<Unit filename="Inc\old\system_stm32l0xx.h" />
+		<Unit filename="Inc\PID.h" />
 		<Unit filename="Inc\ssd1306.h" />
 		<Unit filename="Inc\stm32l0xx_hal_conf.h" />
 		<Unit filename="Inc\stm32l0xx_it.h" />
@@ -305,7 +307,13 @@
 		<Unit filename="Src\main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="Src\max31855.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="Src\menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\PID.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src\ssd1306.c">

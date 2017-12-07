@@ -33,6 +33,8 @@
  void MENU_Init     (void);
  void MENU_Process  (void);
  void MENU_Action   (MENU_Action_e action);
+ void MENU_PrintDots(uint16_t *data, uint8_t size);
+
  /* ------------------------------------------------------------------------------------------------------------------*/
  
  #endif//__MENU_H__

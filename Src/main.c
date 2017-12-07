@@ -43,6 +43,7 @@
 #include "ssd1306.h"
 #include "Fonts.h"
 #include "menu.h"
+#include "PID.h"
 
 typedef enum __ENCODER_State_e
 {
@@ -60,6 +61,7 @@ SPI_HandleTypeDef hspi1;
 ENCODER_State_e encoderState;
 
 /* Private function prototypes -----------------------------------------------*/
+
 void SystemClock_Config(void);
 static void EncoderRead(void);
 static void MX_GPIO_Init(void);
@@ -76,6 +78,8 @@ int main(void)
     uint32_t encoderTimer;
     uint32_t encoderSwitchTimer;
     uint32_t encoderSwitchPeriod;
+
+
     encoderState = ENC_STATE_UNKNOWN;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -87,12 +91,15 @@ int main(void)
     MX_SPI1_Init();
 
     MENU_Init();
+    SYS_Init();
 
     encoderSwitchPeriod = 100;
 
     while (1)
     {
         MENU_Process();
+
+        SYS_Process();
 
         if (HAL_GetTick() - encoderTimer > 5)
         {

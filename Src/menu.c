@@ -41,6 +41,9 @@ typedef enum __MENU_LIST_e
 
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
 
+#define MAX_ITEM_PER_PAGE   5   // 5 Items with a font of 10 pixel high ( + 10 pixels for title )
+#define MENU_FONT           Font_7x10
+
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
 
 /*
@@ -103,14 +106,14 @@ const MENU_Item_t MENU_MainMenuItems[] =
 {
     { "View Settings",      NULL,       INFO_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
     { "Edit Settings",      NULL,       SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Start",              SYS_Start,  MAIN_MENU,      ITEM_ACTION,        UNIT_NO_UNIT },
+    { "Start",              SYS_Start,  INFO_MENU,      ITEM_ACTION,        UNIT_NO_UNIT },
     { "Stop",               SYS_Stop,   MAIN_MENU,      ITEM_ACTION,        UNIT_NO_UNIT }
 };
 
 // Definition for the 'Settings'
 const MENU_Item_t MENU_SettingsMenuItems[] =
 {
-    { "<- Back",       NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
     { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
@@ -122,7 +125,7 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
 
 const MENU_Item_t MENU_InfoItems[] =
 {
-    { "<- Back",       NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
 };
 
 const MENU_Item_t MENU_NoItems[] =
@@ -181,27 +184,26 @@ static uint16_t *editVariablePtr;
 void MENU_PrintMenu(MENU_LIST_e page)
 {
     static uint8_t firstItem = 0;
-    static uint8_t lastItem = 5;
+    static uint8_t lastItem = MAX_ITEM_PER_PAGE;
     static MENU_LIST_e lastPrintedPage = NO_MENU;
     uint8_t yPos = 0;
     uint8_t xPos;
 
-    FontDef Font = Font_7x10;
-    xPos = Font.FontWidth + 1;
+    xPos = MENU_FONT.FontWidth + 1;
     MENU_Item_t *itemList = (MENU_Item_t *)menuItemList[page];
     //Clear screen
     ssd1306_Fill(Black);
     //Write Page Title
-    xPos = (SSD1306_WIDTH/2) - (strlen(menuTitle[page])/2)*Font.FontWidth; //Center the string
+    xPos = (SSD1306_WIDTH/2) - (strlen(menuTitle[page])/2)*MENU_FONT.FontWidth; //Center the string
     ssd1306_SetCursor(xPos,yPos);
-    ssd1306_WriteString(menuTitle[page], Font_7x10, White);
+    ssd1306_WriteString(menuTitle[page], MENU_FONT, White);
 
-    yPos += Font.FontHeight;
+    yPos += MENU_FONT.FontHeight;
     if ( page != lastPrintedPage)
     {
         lastPrintedPage = page;
         firstItem = 0;
-        lastItem = menuNbOfItems[page] > 5 ? 5 : menuNbOfItems[page];
+        lastItem = menuNbOfItems[page] > MAX_ITEM_PER_PAGE ? MAX_ITEM_PER_PAGE : menuNbOfItems[page];
 
     }
     if ( cursorMode == MODE_NAVIGATE )
@@ -209,35 +211,35 @@ void MENU_PrintMenu(MENU_LIST_e page)
         // Roam into the 1st page
         if ( currentPosition < lastItem && currentPosition >= firstItem )
         {
-            ssd1306_SetCursor(0, (lastPosition + 1 - firstItem)*Font.FontHeight);
-            ssd1306_WriteString(" ", Font_7x10, White);
-            ssd1306_SetCursor(0, (currentPosition + 1 - firstItem)*Font.FontHeight);
-            ssd1306_WriteString(">", Font_7x10, White);
+            ssd1306_SetCursor(0, (lastPosition + 1 - firstItem)*MENU_FONT.FontHeight);
+            ssd1306_WriteString(" ", MENU_FONT, White);
+            ssd1306_SetCursor(0, (currentPosition + 1 - firstItem)*MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
         }
         // Scroll Down
         else if (currentPosition >= lastItem && currentPosition > firstItem)
         {
-            firstItem = currentPosition - 4;
+            firstItem = currentPosition - MAX_ITEM_PER_PAGE - 1;
             lastItem = currentPosition + 1;
-            ssd1306_SetCursor(0, (5)*Font.FontHeight);
-            ssd1306_WriteString(">", Font_7x10, White);
+            ssd1306_SetCursor(0, MAX_ITEM_PER_PAGE*MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
         }
         // Scroll Up
         else if (currentPosition < lastItem && currentPosition <= firstItem)
         {
             firstItem = currentPosition;
-            lastItem = (currentPosition + 4) > menuNbOfItems[page] ? menuNbOfItems[page] : firstItem + 5;
-            ssd1306_SetCursor(0, Font.FontHeight);
-            ssd1306_WriteString(">", Font_7x10, White);
+            lastItem = (currentPosition + MAX_ITEM_PER_PAGE + 1) > menuNbOfItems[page] ? menuNbOfItems[page] : firstItem + MAX_ITEM_PER_PAGE;
+            ssd1306_SetCursor(0, MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
         }
 
         //Print the itemps
-        xPos = Font.FontWidth + 1; //Leave a small space between the cursor
+        xPos = MENU_FONT.FontWidth + 1; //Leave a small space between the cursor
         for ( int x=firstItem; x<lastItem; x++)
         {
             ssd1306_SetCursor(xPos,yPos);
-            ssd1306_WriteString(itemList[x].title, Font_7x10, White);
-            yPos += Font.FontHeight;
+            ssd1306_WriteString(itemList[x].title, MENU_FONT, White);
+            yPos += MENU_FONT.FontHeight;
         }
 
     }
@@ -467,4 +469,18 @@ void MENU_Action(MENU_Action_e action)
             }
         }
     }
+}
+
+void MENU_PrintDots(uint16_t *data, uint8_t size)
+{
+    uint8_t step;
+    float ratio;
+    //Clear screen
+    ssd1306_Fill(Black);
+    ratio = 64.0/255.0;
+    for(int x=0; x<SSD1306_WIDTH; x++)
+    {
+        ssd1306_DrawPixel(x, 64-(data[x]*ratio), White);
+    }
+    ssd1306_UpdateScreen();
 }
