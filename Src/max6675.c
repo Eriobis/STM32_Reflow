@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
- * @file    max31855.c
+ * @file    max6675.c
  * @author  Simon Benoit
  * @date    06-12-2017
  * @brief
@@ -16,8 +16,7 @@
 
 /* Forward Declarations ---------------------------------------------------------------------------------------------*/
 
-static int16_t MAX31855_readFirst16bits(void);
-static int16_t MAX31855_readSecond32bits(void);
+static int16_t MAX6675_readData(void);
 
 /* Local Constants --------------------------------------------------------------------------------------------------*/
 
@@ -37,35 +36,14 @@ extern SPI_HandleTypeDef hspi1;
   *
   *--------------------------------------------------------------------------------------------------------------------
   */
-static int16_t MAX31855_readFirst16bits(void)
+static int16_t MAX6675_readData(void)
 {
-    uint8_t data[4];
+    uint8_t data[2];
     int16_t ret = 0;
-    HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Receive(&hspi1, data, 4, 20);
-    HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(MAX6675_CS_Port, MAX6675_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Receive(&hspi1, data, 2, 20);
+    HAL_GPIO_WritePin(MAX6675_CS_Port, MAX6675_CS_Pin, GPIO_PIN_SET);
     ret = data[0] << 8 | data[1];
-    return ret;
-}
-
-/**
-  *--------------------------------------------------------------------------------------------------------------------
-  * @brief
-  *
-  * @param  none
-  *
-  * @retval none
-  *
-  *--------------------------------------------------------------------------------------------------------------------
-  */
-static int16_t MAX31855_readSecond32bits(void)
-{
-    uint8_t data[4];
-    int16_t ret = 0;
-    HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Receive(&hspi1, data, 4, 20);
-    HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_SET);
-    ret = data[2] << 8 | data[3];
     return ret;
 }
 
@@ -81,15 +59,11 @@ static int16_t MAX31855_readSecond32bits(void)
   *
   *--------------------------------------------------------------------------------------------------------------------
   */
-float MAX31855_readCelsius(void)
+float MAX6675_readCelsius(void)
 {
-    int16_t v = MAX31855_readFirst16bits();
-    if (v & 0x1)
-        return 9999.0;
-    if (v & 0x8000)
-        return (((~v) & 0xfffc) + 0x4) / -16.0;
-    else
-        return ((float)(v & 0xfffc) / 16.0);
+    int16_t v = MAX6675_readData();
+    v >>= 3;
+    return ((float)v/(float)4.0);
 }
 
 /**
@@ -102,27 +76,8 @@ float MAX31855_readCelsius(void)
   *
   *--------------------------------------------------------------------------------------------------------------------
   */
-float MAX31855_readCJCelsius(void)
+char MAX6675_readStatus(void)
 {
-    int16_t v = MAX31855_readSecond32bits();
-    if (v & 0x8000)
-        return (((~v) & 0xfff0) + 0x10) / -512.0;
-    else
-        return (float)(v & 0xfff0) / 512.0;
-}
-
-/**
-  *--------------------------------------------------------------------------------------------------------------------
-  * @brief
-  *
-  * @param  none
-  *
-  * @retval none
-  *
-  *--------------------------------------------------------------------------------------------------------------------
-  */
-char MAX31855_readStatus(void)
-{
-    int16_t v = MAX31855_readSecond32bits();
+    int16_t v = MAX6675_readData();
     return v & 0x7;
 }

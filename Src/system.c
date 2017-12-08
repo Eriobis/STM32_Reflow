@@ -9,42 +9,34 @@
 
 #include "stm32l0xx_hal.h"
 #include "pid.h"
+#include "max6675.h"
 #include "menu.h"
+#include "system.h"
 
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
-#define NB_OF_TEMP_POINTS   128
+
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
 
-typedef struct _SYS_Profile_e
-{
-    uint16_t PreHeatTime;
-    uint16_t PreHeatTemp;
-    uint16_t SoakTime;
-    uint16_t SoakTemp;
-    uint16_t ReflowTime;
-    uint16_t ReflowTemp;
-    uint16_t CoolingTime;
-    uint16_t TotalTime;
-    uint16_t SetpointArray[NB_OF_TEMP_POINTS];
-}SYS_Profile_e;
-
 /* Forward Declarations ---------------------------------------------------------------------------------------------*/
+
+static void     SYS_GenerateProfile(SYS_Profile_e *profile);
 
 /* Local Constants --------------------------------------------------------------------------------------------------*/
 
 /* Local Variables --------------------------------------------------------------------------------------------------*/
 
-static uint16_t SYS_PreHeatTime = 30;
-static uint16_t SYS_PreHeatTemp = 80;
-static uint16_t SYS_SoakTime = 60;
-static uint16_t SYS_SoakTemp = 120;
-static uint16_t SYS_ReflowTime = 180;
-static uint16_t SYS_ReflowTemp = 245;
-static uint16_t SYS_CoolingTime = 60;
-static bool     SYS_Started;
-
-SYS_Profile_e profile1;
-
+static uint16_t         SYS_PreHeatTime = 30;
+static uint16_t         SYS_PreHeatTemp = 80;
+static uint16_t         SYS_SoakTime = 60;
+static uint16_t         SYS_SoakTemp = 120;
+static uint16_t         SYS_ReflowTime = 180;
+static uint16_t         SYS_ReflowTemp = 245;
+static uint16_t         SYS_CoolingTime = 60;
+static bool             SYS_Started;
+static uint32_t         SYS_SetpointTimer;
+static uint32_t         SYS_TemperatureTimer;
+static SYS_Profile_e    profile1;
+volatile float            actualTemp;
 
 // Structure to strore PID data and pointer to PID structure
 struct pid_controller ctrldata;
@@ -59,7 +51,7 @@ float kp = 2.5, ki = 1.0, kd = 1.0;
 
 /* Local Functions --------------------------------------------------------------------------------------------------*/
 
-void SYS_GenerateProfile(SYS_Profile_e *profile)
+static void SYS_GenerateProfile(SYS_Profile_e *profile)
 {
     uint16_t x0,x1;
     uint16_t y0,y1;
@@ -74,6 +66,9 @@ void SYS_GenerateProfile(SYS_Profile_e *profile)
     profile->ReflowTime = SYS_ReflowTime;
     profile->CoolingTime = SYS_CoolingTime;
     profile->TotalTime = profile->PreHeatTime + profile->SoakTime + profile->ReflowTime + profile->CoolingTime;
+    //Time in ms before we change setpoint
+    profile->SetpointTime = ((float)profile->TotalTime/(float)NB_OF_TEMP_POINTS)*RATIO_TO_MILLI_MULT;
+    profile->SetpointIndex = 0;
 
     ratio = (float)profile->PreHeatTime/(float)profile->TotalTime;
     x0 = 0;
@@ -145,7 +140,7 @@ void SYS_GenerateProfile(SYS_Profile_e *profile)
 void SYS_Start()
 {
     SYS_GenerateProfile(&profile1);
-    MENU_PrintDots(profile1.SetpointArray, 128);
+    SYS_SetpointTimer = HAL_GetTick();
     SYS_Started = true;
 }
 
@@ -303,32 +298,73 @@ void SYS_Init()
 {
     SYS_Started = false;
 
-	// Prepare PID controller for operation
-	pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
-	// Set controler output limits from 0 to 100
-	pid_limits(pid, 0, 100);
-	// Allow PID to compute and change output
-	pid_auto(pid);
+  // Prepare PID controller for operation
+  pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
+  // Set controler output limits from 0 to 100
+  pid_limits(pid, 0, 100);
+  // Allow PID to compute and change output
+  pid_auto(pid);
 
 }
 
 void SYS_Process()
 {
-    float actualTemp;
     if(SYS_Started)
     {
-        // Get actual temperature
+        // Get actual temperature every 300ms
+        if ( HAL_GetTick() - SYS_TemperatureTimer > 300 )
+        {
+            actualTemp = MAX6675_readCelsius();
+            SYS_TemperatureTimer = HAL_GetTick();
+        }
 
-		// Check if need to compute PID
-		if (pid_need_compute(pid)) {
-			// Read process feedback
-			input = actualTemp;
-			// Compute new PID output value
-			pid_compute(pid);
-			//Change actuator value
-			//Output is updated here so use it !
-		}
+        // Check if need to compute PID
+        if (pid_need_compute(pid))
+        {
+          // Read process feedback
+          input = actualTemp;
+          // Compute new PID output value
+          pid_compute(pid);
+          //Change actuator value
+          //Output is updated here so use it !
+        }
+
+        //Update the setpoint according to the current time
+        if ( HAL_GetTick() - SYS_SetpointTimer > profile1.SetpointTime )
+        {
+            if ( profile1.SetpointIndex < NB_OF_TEMP_POINTS )
+            {
+                setpoint = profile1.SetpointArray[profile1.SetpointIndex];
+                profile1.SetpointIndex ++;
+                SYS_SetpointTimer = HAL_GetTick();
+            }
+            else
+            {
+                SYS_Started = false;
+            }
+            MENU_RefreshMenu();
+        }
     }
+}
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
+SYS_Profile_e *SYS_GetProfile()
+{
+    return &profile1;
+}
+
+float SYS_GetActualTemp()
+{
+    return actualTemp;
 }
 
 uint16_t SYS_GetPreHeatTime() { return SYS_PreHeatTime; }

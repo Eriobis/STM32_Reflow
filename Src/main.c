@@ -43,6 +43,7 @@
 #include "ssd1306.h"
 #include "Fonts.h"
 #include "menu.h"
+#include "system.h"
 #include "PID.h"
 
 typedef enum __ENCODER_State_e
@@ -349,6 +350,13 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(ENCODER_A_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : MAX31855 CS */
+    GPIO_InitStruct.Pin = MAX31855_CS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(MAX31855_CS_Port, &GPIO_InitStruct);
 
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
     HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
