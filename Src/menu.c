@@ -44,13 +44,15 @@ typedef enum __MENU_LIST_e
 
 #define MAX_ITEM_PER_PAGE   5   // 5 Items with a font of 10 pixel high ( + 10 pixels for title )
 #define MENU_FONT           Font_7x10
+#define GRAPH_MAX_HEIGHT    60  //Nb of pixels the highest point on the grapĥ should be
 
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
 
 /*
-    ITEM_NAVIGATION     - The item is used to change page
+    ITEM_NAVIGATION     - The item is used to change page, its callback is run first
     ITEM_EDIT_VARIABLE  - The item is used to modify a variable
-*/
+    ITEM_ACTION         - Launch the item callback only
+    */
 typedef enum __MENU_ItemType_e
 {
     ITEM_NAVIGATION,
@@ -133,7 +135,10 @@ const MENU_Item_t MENU_InfoItems[] =
 
 const MENU_Item_t MENU_NoItems[] =
 {
+    /*No items but go back on click*/
+    { "",              NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
 };
+
 // Pages and items automatic creation
 const char* unitSymbol[] =
 {
@@ -183,7 +188,6 @@ static bool cursorPosChanged;
 static uint16_t *editVariablePtr;
 
 /* Local Functions --------------------------------------------------------------------------------------------------*/
-
 
 void MENU_PrintMenu(MENU_LIST_e page)
 {
@@ -289,18 +293,18 @@ void MENU_SettingMenu()
 
 
 }
-char TempInfoStr1[32];
-char TempInfoStr2[32];
+
 void MENU_RunMenu()
 {
+    static char TempInfoStr1[32];
+    static char TempInfoStr2[32];
     SYS_Profile_e *profile;
     float ratio;
     uint16_t temp;
 
-
     profile = SYS_GetProfile();
     MENU_PrintDots(profile->SetpointArray, NB_OF_TEMP_POINTS);
-    ratio = (float)64/(float)profile->ReflowTemp;
+    ratio = (float)GRAPH_MAX_HEIGHT/(float)profile->ReflowTemp;
     MENU_PrintTempLine(profile->SetpointIndex, (uint16_t)((float)profile->SetpointArray[profile->SetpointIndex]*(float)ratio));
     temp = (uint16_t)SYS_GetActualTemp();
     sprintf(TempInfoStr1, "T =% 3u*C", temp);
