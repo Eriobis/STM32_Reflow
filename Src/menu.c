@@ -45,6 +45,7 @@ typedef enum __MENU_LIST_e
 #define MAX_ITEM_PER_PAGE   5   // 5 Items with a font of 10 pixel high ( + 10 pixels for title )
 #define MENU_FONT           Font_7x10
 #define GRAPH_MAX_HEIGHT    60  //Nb of pixels the highest point on the grapĥ should be
+#define REFRESH_PERIOD      100
 
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
 
@@ -255,7 +256,7 @@ void MENU_PrintMenu(MENU_LIST_e page)
     {
         MENU_EditVariableMenu();
     }
-    ssd1306_UpdateScreen();
+    //ssd1306_UpdateScreen();
 }
 
 void MENU_Goto(MENU_LIST_e nextPage)
@@ -285,7 +286,21 @@ void MENU_EditVariableMenu()
 
 void MENU_MainMenu()
 {
+    uint8_t xPos;
+    char valueStr[16];
 
+    if ( SYS_IsSystemStarted() )
+    {
+        sprintf(valueStr,"- RUNNING -");
+    }
+    else
+    {
+        sprintf(valueStr,"- STOPPED -");
+    }
+    xPos = (SSD1306_WIDTH/2) - (strlen(valueStr)/2)*Font_7x10.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 5*Font_7x10.FontHeight);
+    ssd1306_WriteString(valueStr, Font_7x10, White);
+    //ssd1306_UpdateScreen();
 }
 
 void MENU_SettingMenu()
@@ -305,7 +320,11 @@ void MENU_RunMenu()
     profile = SYS_GetProfile();
     MENU_PrintDots(profile->SetpointArray, NB_OF_TEMP_POINTS);
     ratio = (float)GRAPH_MAX_HEIGHT/(float)profile->ReflowTemp;
-    MENU_PrintTempLine(profile->SetpointIndex, (uint16_t)((float)profile->SetpointArray[profile->SetpointIndex]*(float)ratio));
+    for(int x=0; x<=profile->SetpointIndex; x++)
+    {
+        MENU_PrintTempLine(x, (uint16_t)((float)profile->SetpointArray[x]*(float)ratio));
+    }
+
     temp = (uint16_t)SYS_GetActualTemp();
     sprintf(TempInfoStr1, "T =% 3u*C", temp);
     ssd1306_SetCursor(0, 0);
@@ -315,7 +334,7 @@ void MENU_RunMenu()
     ssd1306_SetCursor(0, 10);
     ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
 
-    ssd1306_UpdateScreen();
+    //ssd1306_UpdateScreen();
 }
 
 void MENU_InfoMenu()
@@ -384,7 +403,7 @@ static void MENU_PrintGraph()
     x = totalTime * graphWidthRatio;
     ssd1306_DrawLine(x0,SSD1306_HEIGHT-y0,x,SSD1306_HEIGHT,White);
 
-    ssd1306_UpdateScreen();
+
 }
 
 /* Global Functions -------------------------------------------------------------------------------------------------*/
@@ -404,6 +423,13 @@ void MENU_Init()
 
 void MENU_Process()
 {
+    static uint32_t refreshTimer;
+
+    if ( HAL_GetTick() - refreshTimer > REFRESH_PERIOD )
+    {
+        menuNeedRefresh = true;
+        refreshTimer = HAL_GetTick();
+    }
 
     if ( menuNeedRefresh || cursorPosChanged )
     {
@@ -415,6 +441,7 @@ void MENU_Process()
         menuCallbackFnc[currentPage]();
         menuNeedRefresh = false;
         cursorPosChanged = false;
+        ssd1306_UpdateScreen();
     }
 }
 

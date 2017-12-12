@@ -41,6 +41,7 @@ typedef struct _SYS_Profile_e
 /* Global Functions Prototypes --------------------------------------------------------------------------------------*/
 
 void            SYS_Process             (void);
+bool            SYS_IsSystemStarted     (void);
 void            SYS_Init                (void);
 void            SYS_Start               (void);
 void            SYS_Stop                (void);

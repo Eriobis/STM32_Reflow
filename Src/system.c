@@ -36,7 +36,7 @@ static bool             SYS_Started;
 static uint32_t         SYS_SetpointTimer;
 static uint32_t         SYS_TemperatureTimer;
 static SYS_Profile_e    profile1;
-volatile float            actualTemp;
+volatile float          actualTemp;
 
 // Structure to strore PID data and pointer to PID structure
 struct pid_controller ctrldata;
@@ -139,9 +139,13 @@ static void SYS_GenerateProfile(SYS_Profile_e *profile)
   */
 void SYS_Start()
 {
-    SYS_GenerateProfile(&profile1);
-    SYS_SetpointTimer = HAL_GetTick();
-    SYS_Started = true;
+    if (!SYS_IsSystemStarted())
+    {
+        SYS_GenerateProfile(&profile1);
+        SYS_SetpointTimer = HAL_GetTick();
+        SYS_Started = true;
+        PWM_Start();
+    }
 }
 
 /**
@@ -157,6 +161,7 @@ void SYS_Start()
 void SYS_Stop()
 {
     SYS_Started = false;
+    PWM_Stop();
 }
 
 /**
@@ -298,12 +303,12 @@ void SYS_Init()
 {
     SYS_Started = false;
 
-  // Prepare PID controller for operation
-  pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
-  // Set controler output limits from 0 to 100
-  pid_limits(pid, 0, 100);
-  // Allow PID to compute and change output
-  pid_auto(pid);
+    // Prepare PID controller for operation
+    pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
+    // Set controler output limits from 0 to 100
+    pid_limits(pid, 0, 100);
+    // Allow PID to compute and change output
+    pid_auto(pid);
 
 }
 
@@ -326,7 +331,7 @@ void SYS_Process()
           // Compute new PID output value
           pid_compute(pid);
           //Change actuator value
-          //Output is updated here so use it !
+          PWM_SetDutyCycle((uint8_t)output);
         }
 
         //Update the setpoint according to the current time
@@ -340,7 +345,8 @@ void SYS_Process()
             }
             else
             {
-                SYS_Started = false;
+                SYS_Stop();
+                profile1.SetpointIndex = 0;
             }
             MENU_RefreshMenu();
         }

@@ -45,6 +45,7 @@
 #include "menu.h"
 #include "system.h"
 #include "PID.h"
+#include "pwm.h"
 
 typedef enum __ENCODER_State_e
 {
@@ -93,14 +94,14 @@ int main(void)
 
     MENU_Init();
     SYS_Init();
-
+    PWM_Init();
     encoderSwitchPeriod = 100;
 
     while (1)
     {
         MENU_Process();
-
         SYS_Process();
+        PWM_Process();
 
         if (HAL_GetTick() - encoderTimer > 5)
         {

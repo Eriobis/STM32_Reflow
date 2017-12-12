@@ -293,6 +293,7 @@
 		<Unit filename="Inc\old\stm32l0xx.h" />
 		<Unit filename="Inc\old\system_stm32l0xx.h" />
 		<Unit filename="Inc\PID.h" />
+		<Unit filename="Inc\pwm.h" />
 		<Unit filename="Inc\ssd1306.h" />
 		<Unit filename="Inc\stm32l0xx_hal_conf.h" />
 		<Unit filename="Inc\stm32l0xx_it.h" />
@@ -317,6 +318,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src\PID.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Src\pwm.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src\ssd1306.c">

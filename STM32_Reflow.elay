@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBitz_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="Drivers\CMSIS\Include\core_cm0.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="36268" topLine="746" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal.h" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="15650" topLine="368" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_cortex.h" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10806" topLine="241" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Inc\stm32l0xx_hal_i2c.h" open="0" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12912" topLine="267" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal.c" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11449" topLine="275" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_cortex.c" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9017" topLine="187" />
+		</Cursor>
+	</File>
+	<File name="Drivers\STM32L0xx_HAL_Driver\Src\stm32l0xx_hal_i2c.c" open="0" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="152532" topLine="162" />
+		</Cursor>
+	</File>
+	<File name="Inc\main.h" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3539" topLine="45" />
+		</Cursor>
+	</File>
+	<File name="Inc\menu.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1211" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Inc\PID.h" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2692" topLine="36" />
+		</Cursor>
+	</File>
+	<File name="Inc\ssd1306.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1185" topLine="27" />
+		</Cursor>
+	</File>
+	<File name="Inc\stm32l0xx_hal_conf.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6794" topLine="269" />
+		</Cursor>
+	</File>
+	<File name="Inc\stm32l0xx_it.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2615" topLine="19" />
+		</Cursor>
+	</File>
+	<File name="Inc\system.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2552" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Src\fonts.c" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="42019" topLine="265" />
+		</Cursor>
+	</File>
+	<File name="Src\main.c" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3048" topLine="387" />
+		</Cursor>
+	</File>
+	<File name="Src\max31855.c" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3379" topLine="55" />
+		</Cursor>
+	</File>
+	<File name="Src\max6675.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2487" topLine="29" />
+		</Cursor>
+	</File>
+	<File name="Src\menu.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10972" topLine="279" />
+		</Cursor>
+	</File>
+	<File name="Src\PID.c" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1368" topLine="12" />
+		</Cursor>
+	</File>
+	<File name="Src\ssd1306.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2759" topLine="59" />
+		</Cursor>
+	</File>
+	<File name="Src\startup_stm32l0xx.S" open="1" top="1" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4852" topLine="103" />
+		</Cursor>
+	</File>
+	<File name="Src\stm32l0xx_hal_msp.c" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5092" topLine="133" />
+		</Cursor>
+	</File>
+	<File name="Src\stm32l0xx_it.c" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2763" topLine="78" />
+		</Cursor>
+	</File>
+	<File name="Src\system.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9389" topLine="300" />
+		</Cursor>
+	</File>
+</EmBitz_layout_file>
