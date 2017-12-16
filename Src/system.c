@@ -12,6 +12,7 @@
 #include "max6675.h"
 #include "menu.h"
 #include "system.h"
+#include "pwm.h"
 
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
 
@@ -339,6 +340,7 @@ void SYS_Process()
         {
             if ( profile1.SetpointIndex < NB_OF_TEMP_POINTS )
             {
+                LOGGER_CurrentTempAdd((uint16_t)actualTemp,(uint16_t)setpoint);
                 setpoint = profile1.SetpointArray[profile1.SetpointIndex];
                 profile1.SetpointIndex ++;
                 SYS_SetpointTimer = HAL_GetTick();

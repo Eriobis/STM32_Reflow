@@ -49,11 +49,11 @@
 
 typedef enum __ENCODER_State_e
 {
-    ENC_STATE_UNKNOWN,
-    ENC_STATE_11,
-    ENC_STATE_01,
     ENC_STATE_00,
+    ENC_STATE_01,
     ENC_STATE_10,
+    ENC_STATE_11,
+    ENC_STATE_UNKNOWN,
 }ENCODER_State_e;
 
 /* Private variables ---------------------------------------------------------*/
@@ -61,6 +61,9 @@ typedef enum __ENCODER_State_e
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
 ENCODER_State_e encoderState;
+ENCODER_State_e lastState;
+uint32_t plus = 0;
+uint32_t moin = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -103,11 +106,12 @@ int main(void)
         SYS_Process();
         PWM_Process();
 
-        if (HAL_GetTick() - encoderTimer > 5)
+   /*     if (HAL_GetTick() - encoderTimer > 2)
         {
             encoderTimer = HAL_GetTick();
             EncoderRead();
         }
+*/
         if (HAL_GetTick() - encoderSwitchTimer > encoderSwitchPeriod)
         {
             encoderSwitchTimer = HAL_GetTick();
@@ -121,70 +125,95 @@ int main(void)
     }
 }
 
+GPIO_PinState lastVal1;
 static void EncoderRead()
 {
     GPIO_PinState val1, val2;
     val1 = HAL_GPIO_ReadPin(ENCODER_A_Port,ENCODER_A_Pin);
     val2 = HAL_GPIO_ReadPin(ENCODER_B_Port,ENCODER_B_Pin);
-
-    switch (encoderState)
+/*
+    if ( val1 != lastVal1)
     {
-        case ENC_STATE_UNKNOWN :
-            if ( val1 && val2 )
+        lastVal1 = val1;
+        if ( !lastVal1 )
+        {
+            if ( val2 )
             {
-                encoderState = ENC_STATE_11;
-            }
-            else if ( val1 )
-            {
-                encoderState = ENC_STATE_01;
-            }
-            else if ( val2 )
-            {
-                encoderState = ENC_STATE_10;
+                plus++;
             }
             else
             {
-                encoderState = ENC_STATE_00;
+                moin++;
             }
+        }
+    }
+    if (plus > 50)
+    {
+        MENU_Action(ACTION_UP);
+        plus = 0;
+        moin = 0;
+    }
+    else if(moin > 50)
+    {
+        MENU_Action(ACTION_DOWN);
+        moin = 0;
+        plus = 0;
+    }
+ */
+   switch (encoderState)
+    {
+        case ENC_STATE_UNKNOWN :
+            if ( !val1 && !val2 )
+                encoderState = ENC_STATE_00;
         break;
         case ENC_STATE_00 :
-            if ( val1 )
+            if ( !val1 && val2)
             {
-                encoderState = ENC_STATE_01;
-                MENU_Action(ACTION_DOWN);
+                if (lastState != ENC_STATE_01)
+                {
+                    lastState = encoderState;
+                    encoderState = ENC_STATE_01;
+                    MENU_Action(ACTION_DOWN);
+                    moin++;
+                }
             }
-            else if ( val2 )
+            else if ( val1 && !val2 )
             {
-                encoderState = ENC_STATE_10;
-                MENU_Action(ACTION_UP);
+                if (lastState != ENC_STATE_10)
+                {
+                    lastState = encoderState;
+                    encoderState = ENC_STATE_10;
+                    MENU_Action(ACTION_UP);
+                    plus++;
+                }
             }
         break;
         case ENC_STATE_01 :
-            if ( !val1 )
+            if ( !val1 && !val2 )
             {
                 encoderState = ENC_STATE_00;
             }
-            else if ( val2 )
+            else if ( val1 && val2 )
             {
                 encoderState = ENC_STATE_11;
             }
         break;
         case ENC_STATE_11 :
-            if ( !val1 )
+            if ( val1 && !val2 )
             {
                 encoderState = ENC_STATE_10;
             }
-            else if ( !val2 )
+            else if ( !val1 && val2 )
             {
                 encoderState = ENC_STATE_01;
             }
         break;
         case ENC_STATE_10 :
-            if ( val1 )
+            if ( val1 && val2 )
             {
                 encoderState = ENC_STATE_11;
             }
-            else if ( !val2 )
+            else if ( !val2 && !val1 )
             {
                 encoderState = ENC_STATE_00;
             }
@@ -347,7 +376,7 @@ static void MX_GPIO_Init(void)
 
     /*Configure GPIO pin : ENCODER KNOB */
     GPIO_InitStruct.Pin = ENCODER_A_Pin | ENCODER_B_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(ENCODER_A_Port, &GPIO_InitStruct);
@@ -377,6 +406,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
         case  GPIO_PIN_2:
         case  GPIO_PIN_3:
+            EncoderRead();
             break;
         default:
             break;

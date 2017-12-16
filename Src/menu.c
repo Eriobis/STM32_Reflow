@@ -489,6 +489,7 @@ void MENU_Action(MENU_Action_e action)
                         item->callbackFnc((void *)&editVariablePtr);
                         cursorMode = MODE_EDIT;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
 
@@ -515,6 +516,7 @@ void MENU_Action(MENU_Action_e action)
                     {
                         *editVariablePtr += 10;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
                 case  ACTION_DOWN:
@@ -522,6 +524,7 @@ void MENU_Action(MENU_Action_e action)
                     {
                         *editVariablePtr -= 10;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
                 case  ACTION_CLICK:
@@ -530,6 +533,7 @@ void MENU_Action(MENU_Action_e action)
                     // Release the variable
                     editVariablePtr = NULL;
                     MENU_Goto(item->nextMenu);
+                    cursorPosChanged = true;
                     break;
                 default:
                     break;
