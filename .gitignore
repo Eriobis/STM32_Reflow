@@ -4,7 +4,12 @@
 *.o
 
 bin/Debug/STM32_Reflow\.elf
+bin/Debug/STM32_Reflow\.map
 
 *.hex
 
-bin/Debug/STM32_Reflow\.map
+*.ebTemp
+
+*Conflicted*
+
+*.depend
