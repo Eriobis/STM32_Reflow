@@ -110,7 +110,6 @@ const char cursorSymbol = '>';
 // Definition for the 'Main Menu'
 const MENU_Item_t MENU_MainMenuItems[] =
 {
-    { "View Settings",      NULL,               INFO_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
     { "Edit Settings",      NULL,               SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
     { "Start",              (void*)SYS_Start,   RUN_PAGE,       ITEM_NAVIGATION,    UNIT_NO_UNIT },
     { "Stop",               (void*)SYS_Stop,    MAIN_MENU,      ITEM_ACTION,        UNIT_NO_UNIT }
@@ -120,6 +119,7 @@ const MENU_Item_t MENU_MainMenuItems[] =
 const MENU_Item_t MENU_SettingsMenuItems[] =
 {
     { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "View Settings", NULL,                            SETTING_MENU,    ITEM_NAVIGATION,       UNIT_NO_UNIT    },
     { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
@@ -228,7 +228,7 @@ void MENU_PrintMenu(MENU_LIST_e page)
         // Scroll Down
         else if (currentPosition >= lastItem && currentPosition > firstItem)
         {
-            firstItem = currentPosition - MAX_ITEM_PER_PAGE - 1;
+            firstItem = currentPosition - (MAX_ITEM_PER_PAGE - 1);
             lastItem = currentPosition + 1;
             ssd1306_SetCursor(0, MAX_ITEM_PER_PAGE*MENU_FONT.FontHeight);
             ssd1306_WriteString(">", MENU_FONT, White);
@@ -286,9 +286,19 @@ void MENU_EditVariableMenu()
 
 void MENU_MainMenu()
 {
+    static char TempInfoStr1[16];
+    uint16_t temp;
     uint8_t xPos;
     char valueStr[16];
 
+    //Print the current temp
+    temp = (uint16_t)SYS_GetActualTemp();
+    sprintf(TempInfoStr1, "T =% 3u*C", temp);
+    xPos = (SSD1306_WIDTH/2) - (strlen(TempInfoStr1)/2)*Font_7x10.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 4*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+
+    //Print the system status on the last row
     if ( SYS_IsSystemStarted() )
     {
         sprintf(valueStr,"- RUNNING -");

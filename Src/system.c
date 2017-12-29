@@ -315,14 +315,15 @@ void SYS_Init()
 
 void SYS_Process()
 {
+    // Get actual temperature every 300ms
+    if ( HAL_GetTick() - SYS_TemperatureTimer > 300 )
+    {
+        actualTemp = MAX6675_readCelsius();
+        SYS_TemperatureTimer = HAL_GetTick();
+    }
+    
     if(SYS_Started)
     {
-        // Get actual temperature every 300ms
-        if ( HAL_GetTick() - SYS_TemperatureTimer > 300 )
-        {
-            actualTemp = MAX6675_readCelsius();
-            SYS_TemperatureTimer = HAL_GetTick();
-        }
 
         // Check if need to compute PID
         if (pid_need_compute(pid))
@@ -340,7 +341,7 @@ void SYS_Process()
         {
             if ( profile1.SetpointIndex < NB_OF_TEMP_POINTS )
             {
-                LOGGER_CurrentTempAdd((uint16_t)actualTemp,(uint16_t)setpoint);
+                //LOGGER_CurrentTempAdd((uint16_t)actualTemp,(uint16_t)setpoint);
                 setpoint = profile1.SetpointArray[profile1.SetpointIndex];
                 profile1.SetpointIndex ++;
                 SYS_SetpointTimer = HAL_GetTick();
