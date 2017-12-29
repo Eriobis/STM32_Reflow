@@ -20,7 +20,8 @@
 
 /* Forward Declarations ---------------------------------------------------------------------------------------------*/
 
-static void     SYS_GenerateProfile(SYS_Profile_e *profile);
+static void     SYS_GenerateProfile (SYS_Profile_e *profile);
+static void     SYS_ResetProfile    (SYS_Profile_e *profile);
 
 /* Local Constants --------------------------------------------------------------------------------------------------*/
 
@@ -126,6 +127,11 @@ static void SYS_GenerateProfile(SYS_Profile_e *profile)
     }
 }
 
+static void SYS_ResetProfile(SYS_Profile_e *profile)
+{
+    profile->SetpointIndex = 0;
+}
+
 /* Global Functions -------------------------------------------------------------------------------------------------*/
 
 /**
@@ -161,6 +167,7 @@ void SYS_Start()
   */
 void SYS_Stop()
 {
+    SYS_ResetProfile(&profile1);
     SYS_Started = false;
     PWM_Stop();
 }

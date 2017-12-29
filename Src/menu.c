@@ -242,7 +242,7 @@ void MENU_PrintMenu(MENU_LIST_e page)
             ssd1306_WriteString(">", MENU_FONT, White);
         }
 
-        //Print the itemps
+        //Print the items
         xPos = MENU_FONT.FontWidth + 1; //Leave a small space between the cursor
         for ( int x=firstItem; x<lastItem; x++)
         {
@@ -290,10 +290,12 @@ void MENU_MainMenu()
     uint16_t temp;
     uint8_t xPos;
     char valueStr[16];
+    SYS_Profile_e *profile;
 
+    profile = SYS_GetProfile();
     //Print the current temp
     temp = (uint16_t)SYS_GetActualTemp();
-    sprintf(TempInfoStr1, "T =% 3u*C", temp);
+    sprintf(TempInfoStr1, "T=% 3u*C/% 3u*C", temp, profile->SetpointArray[profile->SetpointIndex]);
     xPos = (SSD1306_WIDTH/2) - (strlen(TempInfoStr1)/2)*Font_7x10.FontWidth; //Center the string
     ssd1306_SetCursor(xPos, 4*Font_7x10.FontHeight);
     ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
