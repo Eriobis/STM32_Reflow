@@ -63,6 +63,7 @@ float MAX6675_readCelsius(void)
 {
     int16_t v = MAX6675_readData();
     v >>= 3;
+    v &= 0xE0;
     return ((float)v/(float)4.0);
 }
 
