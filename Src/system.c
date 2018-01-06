@@ -9,7 +9,7 @@
 
 #include "stm32l0xx_hal.h"
 #include "pid.h"
-#include "max6675.h"
+#include "max31855.h"
 #include "menu.h"
 #include "system.h"
 #include "pwm.h"
@@ -17,6 +17,12 @@
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
 
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
+
+typedef enum __SYS_StartType_e
+{
+    SYS_RAMP,
+    SYS_FIXED_TEMP,
+}SYS_StartType_e;
 
 /* Forward Declarations ---------------------------------------------------------------------------------------------*/
 
@@ -27,6 +33,7 @@ static void     SYS_ResetProfile    (SYS_Profile_e *profile);
 
 /* Local Variables --------------------------------------------------------------------------------------------------*/
 
+static uint16_t         SYS_FixedTemp = 100;
 static uint16_t         SYS_PreHeatTime = 30;
 static uint16_t         SYS_PreHeatTemp = 80;
 static uint16_t         SYS_SoakTime = 60;
@@ -38,7 +45,9 @@ static bool             SYS_Started;
 static uint32_t         SYS_SetpointTimer;
 static uint32_t         SYS_TemperatureTimer;
 static SYS_Profile_e    profile1;
-volatile float          actualTemp;
+float                   actualTemp;
+
+SYS_StartType_e         SYS_StartType;
 
 // Structure to strore PID data and pointer to PID structure
 struct pid_controller ctrldata;
@@ -50,6 +59,8 @@ float setpoint = 0;
 
 // Control loop gains
 float kp = 2.5, ki = 1.0, kd = 1.0;
+
+extern uint16_t temperature;
 
 /* Local Functions --------------------------------------------------------------------------------------------------*/
 
@@ -72,6 +83,7 @@ static void SYS_GenerateProfile(SYS_Profile_e *profile)
     profile->SetpointTime = ((float)profile->TotalTime/(float)NB_OF_TEMP_POINTS)*RATIO_TO_MILLI_MULT;
     profile->SetpointIndex = 0;
 
+
     ratio = (float)profile->PreHeatTime/(float)profile->TotalTime;
     x0 = 0;
     y0 = 0;
@@ -83,6 +95,7 @@ static void SYS_GenerateProfile(SYS_Profile_e *profile)
     {
         profile->SetpointArray[x] = a*x + b;
     }
+    profile->PreHeatTempIndex = x1;
 
     ratio = (float)profile->SoakTime/(float)profile->TotalTime;
     x0 = x1;
@@ -151,9 +164,30 @@ void SYS_Start()
         SYS_GenerateProfile(&profile1);
         SYS_SetpointTimer = HAL_GetTick();
         SYS_Started = true;
+        SYS_StartType = SYS_RAMP;
         PWM_Start();
     }
 }
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
+  void SYS_ManStart()
+  {
+      if (!SYS_IsSystemStarted())
+      {
+          SYS_Started = true;
+          SYS_StartType = SYS_FIXED_TEMP;
+          PWM_Start();
+      }
+  }
 
 /**
   *--------------------------------------------------------------------------------------------------------------------
@@ -272,6 +306,21 @@ void SYS_GetReflowTempPtr  (uint16_t** val)
   *
   *--------------------------------------------------------------------------------------------------------------------
   */
+  void SYS_GetFixedTempPtr  (uint16_t** val)
+  {
+    *val = &SYS_FixedTemp;
+  }
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
 void SYS_GetCoolingTimePtr (uint16_t** val)
 {
   *val = &SYS_CoolingTime;
@@ -322,13 +371,15 @@ void SYS_Init()
 
 void SYS_Process()
 {
+    float tj;
     // Get actual temperature every 300ms
     if ( HAL_GetTick() - SYS_TemperatureTimer > 300 )
     {
-        actualTemp = MAX6675_readCelsius();
+        actualTemp = (float)MAX31855_readCelsius(); //MAX6675_readCelsius();
+        tj = MAX31855_readCJCelsius();
         SYS_TemperatureTimer = HAL_GetTick();
     }
-    
+
     if(SYS_Started)
     {
 
@@ -343,22 +394,43 @@ void SYS_Process()
           PWM_SetDutyCycle((uint8_t)output);
         }
 
-        //Update the setpoint according to the current time
-        if ( HAL_GetTick() - SYS_SetpointTimer > profile1.SetpointTime )
+        switch (SYS_StartType)
         {
-            if ( profile1.SetpointIndex < NB_OF_TEMP_POINTS )
-            {
-                //LOGGER_CurrentTempAdd((uint16_t)actualTemp,(uint16_t)setpoint);
-                setpoint = profile1.SetpointArray[profile1.SetpointIndex];
-                profile1.SetpointIndex ++;
-                SYS_SetpointTimer = HAL_GetTick();
-            }
-            else
-            {
-                SYS_Stop();
-                profile1.SetpointIndex = 0;
-            }
-            MENU_RefreshMenu();
+            case SYS_RAMP:
+                //Update the setpoint according to the current time
+                if ( HAL_GetTick() - SYS_SetpointTimer > profile1.SetpointTime )
+                {
+                    if ( profile1.SetpointIndex < NB_OF_TEMP_POINTS )
+                    {
+                        //LOGGER_CurrentTempAdd((uint16_t)actualTemp,(uint16_t)setpoint);
+                        if ( (profile1.SetpointIndex < profile1.PreHeatTempIndex) || (profile1.SetpointIndex > profile1.PreHeatTempIndex) )
+                        {
+                            setpoint = profile1.SetpointArray[profile1.SetpointIndex];
+                            profile1.SetpointIndex ++;
+                        }
+                        //If we are at the preheat temp, wait until we reach the preheat temp
+                        else
+                        {
+                            setpoint = profile1.SetpointArray[profile1.SetpointIndex];
+                            if (actualTemp >= setpoint)
+                            {
+                                profile1.SetpointIndex ++;
+                            }
+                        }
+                        SYS_SetpointTimer = HAL_GetTick();
+                    }
+                    else
+                    {
+                        SYS_Stop();
+                        profile1.SetpointIndex = 0;
+                    }
+                    MENU_RefreshMenu();
+                }
+                break;
+
+            case SYS_FIXED_TEMP:
+                setpoint = SYS_FixedTemp;
+                break;
         }
     }
 }
@@ -385,8 +457,9 @@ float SYS_GetActualTemp()
 
 uint16_t SYS_GetPreHeatTime() { return SYS_PreHeatTime; }
 uint16_t SYS_GetPreHeatTemp() { return SYS_PreHeatTemp; }
-uint16_t SYS_GetSoakTime()    { return SYS_SoakTime; }
-uint16_t SYS_GetSoakTemp()    { return SYS_SoakTemp; }
-uint16_t SYS_GetReflowTime()  { return SYS_ReflowTime; }
+uint16_t SYS_GetSoakTime()    { return SYS_SoakTime;    }
+uint16_t SYS_GetSoakTemp()    { return SYS_SoakTemp;    }
+uint16_t SYS_GetReflowTime()  { return SYS_ReflowTime;  }
 uint16_t SYS_GetReflowTemp()  { return SYS_ReflowTemp ; }
 uint16_t SYS_GetCoolingTime() { return SYS_CoolingTime; }
+uint16_t SYS_GetFixedTemp()   { return SYS_FixedTemp;   }

@@ -17,8 +17,10 @@
     X_MENU( "",                     NO_MENU,      NULL,         MENU_MainMenu,      MENU_NoItems            )   \
     X_MENU( "-- Main Menu --",      MAIN_MENU,    NULL,         MENU_MainMenu,      MENU_MainMenuItems      )   \
     X_MENU( "-- Settings --",       SETTING_MENU, MAIN_MENU,    MENU_SettingMenu,   MENU_SettingsMenuItems  )   \
+    X_MENU( "-- Start Menu --",     START_MENU,   MAIN_MENU,    MENU_StartMenu,     MENU_StartMenuItems     )   \
     X_MENU( "-- Info --",           INFO_MENU,    MAIN_MENU,    MENU_InfoMenu,      MENU_InfoItems          )   \
     X_MENU( "",                     RUN_PAGE,     MAIN_MENU,    MENU_RunMenu,       MENU_NoItems            )   \
+    X_MENU( "--Manual Heating--",   MAN_RUN_PAGE, MAIN_MENU,    MENU_ManRunMenu,    MENU_StopOnClickItems   )   \
 
     #define X_UNIT_TYPE   \
     X_UNIT( "°C",   UNIT_DEG )   \
@@ -96,11 +98,13 @@ typedef struct __MENU_page_t
 static void MENU_PrintMenu          (MENU_LIST_e menu);
 static void MENU_Goto               (MENU_LIST_e menu);
 static void MENU_MainMenu           (void);
+static void MENU_StartMenu          (void);
 static void MENU_InfoMenu           (void);
 static void MENU_SettingMenu        (void);
 static void MENU_EditVariableMenu   (void);
 static void MENU_PrintGraph         (void);
 static void MENU_RunMenu            (void);
+static void MENU_ManRunMenu            (void);
 static void MENU_PrintTempLine      (uint16_t x, uint16_t y);
 
 /* Local Constants --------------------------------------------------------------------------------------------------*/
@@ -111,7 +115,7 @@ const char cursorSymbol = '>';
 const MENU_Item_t MENU_MainMenuItems[] =
 {
     { "Edit Settings",      NULL,               SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Start",              (void*)SYS_Start,   RUN_PAGE,       ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Start ...",          NULL,               START_MENU,     ITEM_NAVIGATION,    UNIT_NO_UNIT },
     { "Stop",               (void*)SYS_Stop,    MAIN_MENU,      ITEM_ACTION,        UNIT_NO_UNIT }
 };
 
@@ -120,6 +124,7 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
 {
     { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
     { "View Settings", NULL,                            SETTING_MENU,    ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "Fixed Temp",    (void*)SYS_GetFixedTempPtr,      SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
@@ -127,6 +132,14 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
     { "Reflow time",   (void*)SYS_GetReflowTimePtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Reflow temp",   (void*)SYS_GetReflowTempPtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Cooling time",  (void*)SYS_GetCoolingTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
+};
+
+// Definition for the 'Start menu'
+const MENU_Item_t MENU_StartMenuItems[] =
+{
+    { "..Back",        NULL,                    MAIN_MENU,      ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "PID Automatic", (void*)SYS_Start,        RUN_PAGE,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "Fixed temp",    (void*)SYS_ManStart,     MAN_RUN_PAGE,   ITEM_NAVIGATION,       UNIT_NO_UNIT    }
 };
 
 const MENU_Item_t MENU_InfoItems[] =
@@ -138,6 +151,12 @@ const MENU_Item_t MENU_NoItems[] =
 {
     /*No items but go back on click*/
     { "",              NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+};
+
+const MENU_Item_t MENU_StopOnClickItems[] =
+{
+    /*No items but go back on click*/
+    { "Stop",          (void*)SYS_Stop,                 MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
 };
 
 // Pages and items automatic creation
@@ -318,6 +337,10 @@ void MENU_MainMenu()
 void MENU_SettingMenu()
 {
 
+}
+
+void MENU_StartMenu()
+{
 
 }
 
@@ -346,6 +369,22 @@ void MENU_RunMenu()
     ssd1306_SetCursor(0, 10);
     ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
 
+    //ssd1306_UpdateScreen();
+}
+
+void MENU_ManRunMenu()
+{
+    static char TempInfoStr1[32];
+    static char TempInfoStr2[32];
+    uint16_t temp;
+    temp = (uint16_t)SYS_GetActualTemp();
+    sprintf(TempInfoStr1, "Temp =% 3u*C", temp);
+    ssd1306_SetCursor(0, 4*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+
+    sprintf(TempInfoStr2, "Setpoint =% 3u*C", SYS_GetFixedTemp());
+    ssd1306_SetCursor(0, 5*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
     //ssd1306_UpdateScreen();
 }
 

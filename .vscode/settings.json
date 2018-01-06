@@ -2,6 +2,7 @@
     "files.associations": {
         "fonts.h": "c",
         "font5x7.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "stm32l0xx_hal.h": "c"
     }
 }

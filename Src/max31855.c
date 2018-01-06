@@ -39,10 +39,11 @@ extern SPI_HandleTypeDef hspi1;
   */
 static int16_t MAX31855_readFirst16bits(void)
 {
+    HAL_StatusTypeDef status;
     uint8_t data[4];
     int16_t ret = 0;
     HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_RESET);
-    HAL_SPI_Receive(&hspi1, data, 4, 20);
+    status = HAL_SPI_Receive(&hspi1, data, 4, 100);
     HAL_GPIO_WritePin(MAX31855_CS_Port, MAX31855_CS_Pin, GPIO_PIN_SET);
     ret = data[0] << 8 | data[1];
     return ret;
@@ -84,12 +85,18 @@ static int16_t MAX31855_readSecond32bits(void)
 float MAX31855_readCelsius(void)
 {
     int16_t v = MAX31855_readFirst16bits();
+    float tmp;
     if (v & 0x1)
         return 9999.0;
     if (v & 0x8000)
-        return (((~v) & 0xfffc) + 0x4) / -16.0;
+    {
+        tmp =  (float)(((~v) & 0xfffc) + 0x4) / -16.0;
+    }
     else
-        return ((float)(v & 0xfffc) / 16.0);
+    {
+        tmp = (float)(v & 0xfffc) / 16.0;
+    }
+    return tmp;
 }
 
 /**
@@ -106,9 +113,9 @@ float MAX31855_readCJCelsius(void)
 {
     int16_t v = MAX31855_readSecond32bits();
     if (v & 0x8000)
-        return (((~v) & 0xfff0) + 0x10) / -512.0;
+        return (((~v) & 0xfff0) + 0x10) / -256.0;
     else
-        return (float)(v & 0xfff0) / 512.0;
+        return (float)(v & 0xfff0) / 256.0;
 }
 
 /**

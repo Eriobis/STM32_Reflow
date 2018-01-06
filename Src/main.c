@@ -56,14 +56,27 @@ typedef enum __ENCODER_State_e
     ENC_STATE_UNKNOWN,
 }ENCODER_State_e;
 
+typedef enum __ADC_CHANNEL_e
+{
+    ADC_REF,
+    ADC_TEMP
+}ADC_CHANNEL_e;
+
 /* Private variables ---------------------------------------------------------*/
 
+ADC_HandleTypeDef adc1;
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
 ENCODER_State_e encoderState;
 ENCODER_State_e lastState;
 uint32_t plus = 0;
 uint32_t moin = 0;
+volatile uint32_t adcValue;
+volatile uint32_t adcRef;
+ADC_CHANNEL_e CurrentSample;
+uint32_t adcTempSum;
+uint16_t adcTempCount;
+uint16_t temperature;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -72,6 +85,7 @@ static void EncoderRead(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_ADC1_Init(void);
 
 extern void SSD1306LibTest();
 
@@ -83,7 +97,8 @@ int main(void)
     uint32_t encoderTimer;
     uint32_t encoderSwitchTimer;
     uint32_t encoderSwitchPeriod;
-
+    uint32_t AdcTimer;
+    ADC_ChannelConfTypeDef sConfig;
 
     encoderState = ENC_STATE_UNKNOWN;
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -99,19 +114,31 @@ int main(void)
     SYS_Init();
     PWM_Init();
     encoderSwitchPeriod = 100;
-
+  /*  adcTempSum = 0;
+    adcTempCount = 0;
+    HAL_ADC_Start_IT(&adc1);
+*/
     while (1)
     {
+  /*      if ( adcTempCount >= 16 )
+        {
+            uint32_t t;
+            t = adcTempSum/adcTempCount;
+            adcTempCount = 0;
+            adcTempSum = 0;
+            temperature = (uint32_t)(-0.0431*(float)t + (float)192.41);
+        }
+    */
+     /*   if (HAL_GetTick() - AdcTimer > 20)
+        {
+            HAL_ADC_Start_IT(&adc1);
+            AdcTimer = HAL_GetTick();
+        }
+*/
         MENU_Process();
         SYS_Process();
         PWM_Process();
 
-   /*     if (HAL_GetTick() - encoderTimer > 2)
-        {
-            encoderTimer = HAL_GetTick();
-            EncoderRead();
-        }
-*/
         if (HAL_GetTick() - encoderSwitchTimer > encoderSwitchPeriod)
         {
             encoderSwitchTimer = HAL_GetTick();
@@ -131,35 +158,7 @@ static void EncoderRead()
     GPIO_PinState val1, val2;
     val1 = HAL_GPIO_ReadPin(ENCODER_A_Port,ENCODER_A_Pin);
     val2 = HAL_GPIO_ReadPin(ENCODER_B_Port,ENCODER_B_Pin);
-/*
-    if ( val1 != lastVal1)
-    {
-        lastVal1 = val1;
-        if ( !lastVal1 )
-        {
-            if ( val2 )
-            {
-                plus++;
-            }
-            else
-            {
-                moin++;
-            }
-        }
-    }
-    if (plus > 50)
-    {
-        MENU_Action(ACTION_UP);
-        plus = 0;
-        moin = 0;
-    }
-    else if(moin > 50)
-    {
-        MENU_Action(ACTION_DOWN);
-        moin = 0;
-        plus = 0;
-    }
- */
+
    switch (encoderState)
     {
         case ENC_STATE_UNKNOWN :
@@ -280,6 +279,73 @@ void SystemClock_Config(void)
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+static void MX_ADC1_Init(void)
+{
+    //ADC_ChannelConfTypeDef conf;
+
+    ADC_ChannelConfTypeDef sConfig;
+    __HAL_RCC_ADC1_CLK_ENABLE();
+
+        /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+        */
+      adc1.Instance = ADC1;
+      adc1.Init.OversamplingMode = DISABLE;
+      adc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+      adc1.Init.Resolution = ADC_RESOLUTION_12B;
+      adc1.Init.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
+      adc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+      adc1.Init.ContinuousConvMode = DISABLE;
+      adc1.Init.DiscontinuousConvMode = DISABLE;
+      adc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+      adc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+      adc1.Init.DMAContinuousRequests = DISABLE;
+      adc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+      adc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+      adc1.Init.LowPowerAutoWait = DISABLE;
+      adc1.Init.LowPowerFrequencyMode = DISABLE;
+      adc1.Init.LowPowerAutoPowerOff = DISABLE;
+      if (HAL_ADC_Init(&adc1) != HAL_OK)
+      {
+        _Error_Handler(__FILE__, __LINE__);
+      }
+
+        /**Configure for the selected ADC regular channel to be converted.
+        */
+      sConfig.Channel = ADC_CHANNEL_14;
+      sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+      if (HAL_ADC_ConfigChannel(&adc1, &sConfig) != HAL_OK)
+      {
+        _Error_Handler(__FILE__, __LINE__);
+      }
+      HAL_NVIC_EnableIRQ(ADC1_COMP_IRQn);
+
+      /**Configure for the selected ADC regular channel to be converted.
+        */
+     /* sConfig.Channel = ADC_CHANNEL_VREFINT;
+      if (HAL_ADC_ConfigChannel(&adc1, &sConfig) != HAL_OK)
+      {
+        _Error_Handler(__FILE__, __LINE__);
+      }*/
+    /*
+    adc1.Instance = ADC1;
+    adc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
+    adc1.Init.Resolution = ADC_RESOLUTION_12B;
+    adc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    adc1.Init.ContinuousConvMode = DISABLE;
+    adc1.Init.DiscontinuousConvMode = DISABLE;
+    adc1.Init.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
+    adc1.Init.OversamplingMode = DISABLE;
+    if (HAL_ADC_Init(&adc1) != HAL_OK)
+    {
+      _Error_Handler(__FILE__, __LINE__);
+    }
+    conf.Channel = ADC_CHANNEL_10;
+    conf.Rank = ADC_RANK_CHANNEL_NUMBER;
+    HAL_ADC_ConfigChannel(&adc1, &conf);
+*/
+}
+
 /* I2C1 init function */
 static void MX_I2C1_Init(void)
 {
@@ -315,22 +381,22 @@ static void MX_I2C1_Init(void)
 /* SPI1 init function */
 static void MX_SPI1_Init(void)
 {
-    /* SPI1 parameter configuration*/
-    hspi1.Instance = SPI1;
+    /* SPI2 parameter configuration*/
+    hspi1.Instance = SPI2;
     hspi1.Init.Mode = SPI_MODE_MASTER;
     hspi1.Init.Direction = SPI_DIRECTION_2LINES;
     hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
     hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
     hspi1.Init.NSS = SPI_NSS_SOFT;
-    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     hspi1.Init.CRCPolynomial = 7;
     if (HAL_SPI_Init(&hspi1) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 }
 
@@ -388,6 +454,12 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(MAX31855_CS_Port, &GPIO_InitStruct);
 
+    /*Configure GPIO pin : ADC PC4 */
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
     HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 }
@@ -413,6 +485,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
+void ADC1_COMP_IRQHandler (void)
+{
+    HAL_ADC_IRQHandler(&adc1);
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    uint32_t value;
+    ADC_ChannelConfTypeDef sConfig;
+
+    if( __HAL_ADC_GET_FLAG(&adc1, ADC_FLAG_EOC))
+    {
+            adcValue = HAL_ADC_GetValue(&adc1);
+            adcTempSum += adcValue;
+            adcTempCount ++;
+    }
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
