@@ -8,7 +8,7 @@
 /* Includes ---------------------------------------------------------------------------------------------------------*/
 
 #include "stm32l0xx_hal.h"
-#include "pid.h"
+#include "PID.h"
 #include "max31855.h"
 #include "menu.h"
 #include "system.h"

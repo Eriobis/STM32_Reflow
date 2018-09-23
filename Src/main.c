@@ -41,7 +41,7 @@
 #include "main.h"
 #include "stm32l0xx_hal.h"
 #include "ssd1306.h"
-#include "Fonts.h"
+#include "fonts.h"
 #include "menu.h"
 #include "system.h"
 #include "PID.h"
