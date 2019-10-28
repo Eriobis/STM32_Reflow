@@ -1,0 +1,7 @@
+*.d
+*.o
+*.su
+*.list
+*.map
+
+./Debug
