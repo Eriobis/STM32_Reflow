@@ -66,6 +66,8 @@ uint16_t        SYS_GetCoolingTime      (void);
 uint16_t        SYS_GetFixedTemp        (void);
 SYS_Profile_e   *SYS_GetProfile         (void);
 float           SYS_GetActualTemp       (void);
+void            SYS_FanStop             (void);
+void            SYS_FanStart            (void);
 
 /* ------------------------------------------------------------------------------------------------------------------*/
 
