@@ -145,6 +145,20 @@ static void SYS_ResetProfile(SYS_Profile_e *profile)
     profile->SetpointIndex = 0;
 }
 
+
+static void SYS_InitGPIO()
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    // PC6 = Fan triac driver
+
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
 /* Global Functions -------------------------------------------------------------------------------------------------*/
 
 /**
@@ -166,6 +180,7 @@ void SYS_Start()
         SYS_Started = true;
         SYS_StartType = SYS_RAMP;
         PWM_Start();
+        SYS_FanStart();
     }
 }
 
@@ -186,6 +201,7 @@ void SYS_Start()
           SYS_Started = true;
           SYS_StartType = SYS_FIXED_TEMP;
           PWM_Start();
+          SYS_FanStart();
       }
   }
 
@@ -204,6 +220,7 @@ void SYS_Stop()
     SYS_ResetProfile(&profile1);
     SYS_Started = false;
     PWM_Stop();
+    SYS_FanStop();
 }
 
 /**
@@ -360,6 +377,7 @@ void SYS_Init()
 {
     SYS_Started = false;
 
+    SYS_InitGPIO();
     // Prepare PID controller for operation
     pid = pid_create(&ctrldata, &input, &output, &setpoint, kp, ki, kd);
     // Set controler output limits from 0 to 100
@@ -448,6 +466,38 @@ void SYS_Process()
 SYS_Profile_e *SYS_GetProfile()
 {
     return &profile1;
+}
+
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief Start the fan
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
+void SYS_FanStart()
+{
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+}
+
+/**
+  *--------------------------------------------------------------------------------------------------------------------
+  * @brief  Stop the fan
+  *
+  * @param  none
+  *
+  * @retval none
+  *
+  *--------------------------------------------------------------------------------------------------------------------
+  */
+
+void SYS_FanStop()
+{
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
 }
 
 float SYS_GetActualTemp()
