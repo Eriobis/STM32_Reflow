@@ -96,11 +96,11 @@ int main(void)
     {
         MENU_Process();
 
-        if (HAL_GetTick() - encoderTimer > 5)
-        {
-            encoderTimer = HAL_GetTick();
-            EncoderRead();
-        }
+//        if (HAL_GetTick() - encoderTimer > 5)
+//        {
+//            encoderTimer = HAL_GetTick();
+//            EncoderRead();
+//        }
 
         if (HAL_GetTick() - encoderSwitchTimer > 100)
         {
@@ -125,6 +125,8 @@ int main(void)
 
 static void EncoderRead()
 {
+	static int8_t clockwiseCnt = 0;
+	static int8_t counterClockwiseCnt = 0;
     GPIO_PinState val1, val2;
     val1 = HAL_GPIO_ReadPin(ENCODER_A_Port,ENCODER_A_Pin);
     val2 = HAL_GPIO_ReadPin(ENCODER_B_Port,ENCODER_B_Pin);
@@ -153,44 +155,72 @@ static void EncoderRead()
             if ( val1 )
             {
                 encoderState = ENC_STATE_01;
-                MENU_Action(ACTION_DOWN);
+                counterClockwiseCnt = 0;
+                clockwiseCnt++;
             }
             else if ( val2 )
             {
                 encoderState = ENC_STATE_10;
-                MENU_Action(ACTION_UP);
+                clockwiseCnt = 0;
+                counterClockwiseCnt++;
             }
         break;
         case ENC_STATE_01 :
             if ( !val1 )
             {
                 encoderState = ENC_STATE_00;
+                counterClockwiseCnt = 0;
+                clockwiseCnt++;
             }
             else if ( val2 )
             {
                 encoderState = ENC_STATE_11;
+                clockwiseCnt = 0;
+                counterClockwiseCnt++;
             }
         break;
         case ENC_STATE_11 :
             if ( !val1 )
             {
                 encoderState = ENC_STATE_10;
+                counterClockwiseCnt = 0;
+                clockwiseCnt++;
             }
             else if ( !val2 )
             {
                 encoderState = ENC_STATE_01;
+                clockwiseCnt = 0;
+                counterClockwiseCnt++;
             }
         break;
         case ENC_STATE_10 :
             if ( val1 )
             {
                 encoderState = ENC_STATE_11;
+                counterClockwiseCnt = 0;
+                clockwiseCnt++;
             }
             else if ( !val2 )
             {
                 encoderState = ENC_STATE_00;
+                clockwiseCnt = 0;
+                counterClockwiseCnt++;
             }
         break;
+    }
+
+
+    if (clockwiseCnt > 2)
+    {
+    	MENU_Action(ACTION_DOWN);
+    	clockwiseCnt = 0;
+    	counterClockwiseCnt = 0;
+    }
+    else if (counterClockwiseCnt > 2)
+    {
+    	MENU_Action(ACTION_UP);
+    	clockwiseCnt = 0;
+    	counterClockwiseCnt = 0;
     }
 }
 
@@ -372,6 +402,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
         case  GPIO_PIN_2:
         case  GPIO_PIN_3:
+        	EncoderRead();
             break;
         default:
             break;
