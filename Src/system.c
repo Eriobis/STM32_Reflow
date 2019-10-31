@@ -149,10 +149,16 @@ static void SYS_InitGPIO()
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
-    // PC6 = Fan triac driver
-
+    // PC5 = Fan triac driver
     GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    // PC6 = PWM OUTPUT
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -390,9 +396,9 @@ void SYS_Process()
 {
     float tj;
     // Get actual temperature every 300ms
-    if ( HAL_GetTick() - SYS_TemperatureTimer > 300 )
+    if ( HAL_GetTick() - SYS_TemperatureTimer > 1000 )
     {
-        actualTemp = (float)MAX31855_readCelsius(); //MAX6675_readCelsius();
+        actualTemp = MAX31855_readCelsius(); //MAX6675_readCelsius();
         tj = MAX31855_readCJCelsius();
         SYS_TemperatureTimer = HAL_GetTick();
     }

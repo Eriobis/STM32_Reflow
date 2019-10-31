@@ -14,9 +14,13 @@
 //Menu configuration, enter all your pages here
 //          MENU TITLE,             MENU ID,      PARENTID,     MenuFonction        Item List
 #define X_MENU_CONFIG   \
+    X_MENU( "",                     NO_MENU,      NULL,         MENU_MainMenu,      MENU_NoItems            )   \
     X_MENU( "-- Main Menu --",      MAIN_MENU,    NULL,         MENU_MainMenu,      MENU_MainMenuItems      )   \
     X_MENU( "-- Settings --",       SETTING_MENU, MAIN_MENU,    MENU_SettingMenu,   MENU_SettingsMenuItems  )   \
-    X_MENU( "-- Info --",           INFO_MENU,    MAIN_MENU,    NULL,               MENU_InfoItems  )   \
+    X_MENU( "-- Start Menu --",     START_MENU,   MAIN_MENU,    MENU_StartMenu,     MENU_StartMenuItems     )   \
+    X_MENU( "-- Info --",           INFO_MENU,    MAIN_MENU,    MENU_InfoMenu,      MENU_InfoItems          )   \
+    X_MENU( "",                     RUN_PAGE,     MAIN_MENU,    MENU_RunMenu,       MENU_NoItems            )   \
+    X_MENU( "--Manual Heating--",   MAN_RUN_PAGE, MAIN_MENU,    MENU_ManRunMenu,    MENU_StopOnClickItems   )   \
 
     #define X_UNIT_TYPE   \
     X_UNIT( "°C",   UNIT_DEG )   \
@@ -40,16 +44,23 @@ typedef enum __MENU_LIST_e
 
 /* Local Defines ----------------------------------------------------------------------------------------------------*/
 
+#define MAX_ITEM_PER_PAGE   5   // 5 Items with a font of 10 pixel high ( + 10 pixels for title )
+#define MENU_FONT           Font_7x10
+#define GRAPH_MAX_HEIGHT    60  //Nb of pixels the highest point on the grapĥ should be
+#define REFRESH_PERIOD      100
+
 /* Local Typedefs ---------------------------------------------------------------------------------------------------*/
 
 /*
-    ITEM_NAVIGATION     - The item is used to change page
+    ITEM_NAVIGATION     - The item is used to change page, its callback is run first
     ITEM_EDIT_VARIABLE  - The item is used to modify a variable
-*/
+    ITEM_ACTION         - Launch the item callback only
+    */
 typedef enum __MENU_ItemType_e
 {
     ITEM_NAVIGATION,
     ITEM_EDIT_VARIABLE,
+    ITEM_ACTION,
 }MENU_ItemType_e;
 
 typedef enum MENU_ItemUnit_e
@@ -69,7 +80,7 @@ typedef enum __MENU_CursorMode_e
 typedef struct __MENU_Item_t
 {
     char* title;
-    void (*callbackFnc)(uint16_t** val);
+    void (*callbackFnc)(void* arg);
     MENU_LIST_e nextMenu;
     MENU_ItemType_e actionType;
     MENU_ItemUnit_e unit;
@@ -87,8 +98,15 @@ typedef struct __MENU_page_t
 static void MENU_PrintMenu          (MENU_LIST_e menu);
 static void MENU_Goto               (MENU_LIST_e menu);
 static void MENU_MainMenu           (void);
+static void MENU_StartMenu          (void);
+static void MENU_InfoMenu           (void);
 static void MENU_SettingMenu        (void);
 static void MENU_EditVariableMenu   (void);
+static void MENU_PrintGraph         (void);
+static void MENU_RunMenu            (void);
+static void MENU_ManRunMenu            (void);
+static void MENU_PrintTempLine      (uint16_t x, uint16_t y);
+
 /* Local Constants --------------------------------------------------------------------------------------------------*/
 
 const char cursorSymbol = '>';
@@ -96,16 +114,17 @@ const char cursorSymbol = '>';
 // Definition for the 'Main Menu'
 const MENU_Item_t MENU_MainMenuItems[] =
 {
-    { "View Settings",      NULL,       INFO_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Edit Settings",      NULL,       SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Start",              SYS_Start,  MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT },
-    { "Stop",               SYS_Stop,   MAIN_MENU,      ITEM_NAVIGATION,    UNIT_NO_UNIT }
+    { "Edit Settings",      NULL,               SETTING_MENU,   ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Start ...",          NULL,               START_MENU,     ITEM_NAVIGATION,    UNIT_NO_UNIT },
+    { "Stop",               (void*)SYS_Stop,    MAIN_MENU,      ITEM_ACTION,        UNIT_NO_UNIT }
 };
 
 // Definition for the 'Settings'
 const MENU_Item_t MENU_SettingsMenuItems[] =
 {
-    { "../Main Menu",  NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "View Settings", NULL,                            SETTING_MENU,    ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "Fixed Temp",    (void*)SYS_GetFixedTempPtr,      SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
@@ -115,8 +134,29 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
     { "Cooling time",  (void*)SYS_GetCoolingTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
 };
 
+// Definition for the 'Start menu'
+const MENU_Item_t MENU_StartMenuItems[] =
+{
+    { "..Back",        NULL,                    MAIN_MENU,      ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "PID Automatic", (void*)SYS_Start,        RUN_PAGE,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+    { "Fixed temp",    (void*)SYS_ManStart,     MAN_RUN_PAGE,   ITEM_NAVIGATION,       UNIT_NO_UNIT    }
+};
+
 const MENU_Item_t MENU_InfoItems[] =
 {
+    { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+};
+
+const MENU_Item_t MENU_NoItems[] =
+{
+    /*No items but go back on click*/
+    { "",              NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
+};
+
+const MENU_Item_t MENU_StopOnClickItems[] =
+{
+    /*No items but go back on click*/
+    { "Stop",          (void*)SYS_Stop,                 MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
 };
 
 // Pages and items automatic creation
@@ -142,9 +182,9 @@ const MENU_Item_t* menuItemList[] =
     #undef X_MENU
 };
 
-const void* menuCallbackFnc[] =
+void* (*menuCallbackFnc[])() =
 {
-    #define X_MENU(TITLE, ID, PARENT, FNC, ITEMS) FNC,
+    #define X_MENU(TITLE, ID, PARENT, FNC, ITEMS) (void*)(*FNC),
     X_MENU_CONFIG
     #undef X_MENU
 };
@@ -160,6 +200,7 @@ char* menuTitle[] =
 
 static MENU_CursorMode_e cursorMode;
 static MENU_LIST_e currentPage;
+static MENU_LIST_e lastPage;
 static uint8_t currentPosition;
 static uint8_t lastPosition;
 static bool menuNeedRefresh;
@@ -168,43 +209,73 @@ static uint16_t *editVariablePtr;
 
 /* Local Functions --------------------------------------------------------------------------------------------------*/
 
-
 void MENU_PrintMenu(MENU_LIST_e page)
 {
+    static uint8_t firstItem = 0;
+    static uint8_t lastItem = MAX_ITEM_PER_PAGE;
+    static MENU_LIST_e lastPrintedPage = NO_MENU;
     uint8_t yPos = 0;
     uint8_t xPos;
 
-    FontDef Font = Font_7x10;
-    xPos = Font.FontWidth + 1;
+    xPos = MENU_FONT.FontWidth + 1;
     MENU_Item_t *itemList = (MENU_Item_t *)menuItemList[page];
     //Clear screen
     ssd1306_Fill(Black);
     //Write Page Title
-    xPos = (SSD1306_WIDTH/2) - (strlen(menuTitle[page])/2)*Font.FontWidth; //Center the string
+    xPos = (SSD1306_WIDTH/2) - (strlen(menuTitle[page])/2)*MENU_FONT.FontWidth; //Center the string
     ssd1306_SetCursor(xPos,yPos);
-    ssd1306_WriteString(menuTitle[page], Font_7x10, White);
-    yPos += Font.FontHeight;
+    ssd1306_WriteString(menuTitle[page], MENU_FONT, White);
 
+    yPos += MENU_FONT.FontHeight;
+    if ( page != lastPrintedPage)
+    {
+        lastPrintedPage = page;
+        firstItem = 0;
+        lastItem = menuNbOfItems[page] > MAX_ITEM_PER_PAGE ? MAX_ITEM_PER_PAGE : menuNbOfItems[page];
+
+    }
     if ( cursorMode == MODE_NAVIGATE )
     {
-        for ( int x=0; x<menuNbOfItems[page]; x++)
+        // Roam into the 1st page
+        if ( currentPosition < lastItem && currentPosition >= firstItem )
         {
-            ssd1306_SetCursor(xPos,yPos);
-            ssd1306_WriteString(itemList[x].title, Font_7x10, White);
-            yPos += Font.FontHeight;
+            ssd1306_SetCursor(0, (lastPosition + 1 - firstItem)*MENU_FONT.FontHeight);
+            ssd1306_WriteString(" ", MENU_FONT, White);
+            ssd1306_SetCursor(0, (currentPosition + 1 - firstItem)*MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
+        }
+        // Scroll Down
+        else if (currentPosition >= lastItem && currentPosition > firstItem)
+        {
+            firstItem = currentPosition - (MAX_ITEM_PER_PAGE - 1);
+            lastItem = currentPosition + 1;
+            ssd1306_SetCursor(0, MAX_ITEM_PER_PAGE*MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
+        }
+        // Scroll Up
+        else if (currentPosition < lastItem && currentPosition <= firstItem)
+        {
+            firstItem = currentPosition;
+            lastItem = (currentPosition + MAX_ITEM_PER_PAGE + 1) > menuNbOfItems[page] ? menuNbOfItems[page] : firstItem + MAX_ITEM_PER_PAGE;
+            ssd1306_SetCursor(0, MENU_FONT.FontHeight);
+            ssd1306_WriteString(">", MENU_FONT, White);
         }
 
-        //Print cursor
-        ssd1306_SetCursor(0, (lastPosition+1)*Font.FontHeight);
-        ssd1306_WriteString(" ", Font_7x10, White);
-        ssd1306_SetCursor(0, (currentPosition+1)*Font.FontHeight);
-        ssd1306_WriteString(">", Font_7x10, White);
+        //Print the items
+        xPos = MENU_FONT.FontWidth + 1; //Leave a small space between the cursor
+        for ( int x=firstItem; x<lastItem; x++)
+        {
+            ssd1306_SetCursor(xPos,yPos);
+            ssd1306_WriteString(itemList[x].title, MENU_FONT, White);
+            yPos += MENU_FONT.FontHeight;
+        }
+
     }
     else if ( cursorMode == MODE_EDIT )
     {
         MENU_EditVariableMenu();
     }
-    ssd1306_UpdateScreen();
+    //ssd1306_UpdateScreen();
 }
 
 void MENU_Goto(MENU_LIST_e nextPage)
@@ -219,7 +290,7 @@ void MENU_EditVariableMenu()
     MENU_Item_t *item = (MENU_Item_t *)&itemList[currentPosition];
     char valueStr[16];
     uint8_t xPos;
-    sprintf(valueStr,"%4u",*editVariablePtr);
+    sprintf(valueStr,"% 4u",*editVariablePtr);
     //Draw the frame overlay
     ssd1306_DrawRect(5, 11, SSD1306_WIDTH-10, 50, White);
     xPos = (SSD1306_WIDTH/2) - (strlen(item->title)/2)*Font_7x10.FontWidth; //Center the string
@@ -234,11 +305,162 @@ void MENU_EditVariableMenu()
 
 void MENU_MainMenu()
 {
+    static char TempInfoStr1[16];
+    uint16_t temp;
+    uint8_t xPos;
+    char valueStr[16];
+    SYS_Profile_e *profile;
 
+    profile = SYS_GetProfile();
+    //Print the current temp
+    temp = (uint16_t)SYS_GetActualTemp();
+    if (temp)
+    {
+    	sprintf(TempInfoStr1, "T=% 3u*C/% 3u*C", temp, profile->SetpointArray[profile->SetpointIndex]);
+    }
+    else
+    {
+    	sprintf(TempInfoStr1, "T= N/A  /% 3u*C", profile->SetpointArray[profile->SetpointIndex]);
+    }
+
+    xPos = (SSD1306_WIDTH/2) - (strlen(TempInfoStr1)/2)*Font_7x10.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 4*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+
+    //Print the system status on the last row
+    if ( SYS_IsSystemStarted() )
+    {
+        sprintf(valueStr,"- RUNNING -");
+    }
+    else
+    {
+        sprintf(valueStr,"- STOPPED -");
+    }
+    xPos = (SSD1306_WIDTH/2) - (strlen(valueStr)/2)*Font_7x10.FontWidth; //Center the string
+    ssd1306_SetCursor(xPos, 5*Font_7x10.FontHeight);
+    ssd1306_WriteString(valueStr, Font_7x10, White);
+    //ssd1306_UpdateScreen();
 }
 
 void MENU_SettingMenu()
 {
+
+}
+
+void MENU_StartMenu()
+{
+
+}
+
+void MENU_RunMenu()
+{
+    static char TempInfoStr1[32];
+    static char TempInfoStr2[32];
+    SYS_Profile_e *profile;
+    float ratio;
+    uint16_t temp;
+
+    profile = SYS_GetProfile();
+    MENU_PrintDots(profile->SetpointArray, NB_OF_TEMP_POINTS);
+    ratio = (float)GRAPH_MAX_HEIGHT/(float)profile->ReflowTemp;
+    for(int x=0; x<=profile->SetpointIndex; x++)
+    {
+        MENU_PrintTempLine(x, (uint16_t)((float)profile->SetpointArray[x]*(float)ratio));
+    }
+
+    temp = (uint16_t)SYS_GetActualTemp();
+    sprintf(TempInfoStr1, "T =% 3u*C", temp);
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+
+    sprintf(TempInfoStr2, "S =% 3u*C", profile->SetpointArray[profile->SetpointIndex]);
+    ssd1306_SetCursor(0, 10);
+    ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
+
+    //ssd1306_UpdateScreen();
+}
+
+void MENU_ManRunMenu()
+{
+    static char TempInfoStr1[32];
+    static char TempInfoStr2[32];
+    uint16_t temp;
+    temp = (uint16_t)SYS_GetActualTemp();
+    sprintf(TempInfoStr1, "Temp =% 3u*C", temp);
+    ssd1306_SetCursor(0, 4*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+
+    sprintf(TempInfoStr2, "Setpoint =% 3u*C", SYS_GetFixedTemp());
+    ssd1306_SetCursor(0, 5*Font_7x10.FontHeight);
+    ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
+    //ssd1306_UpdateScreen();
+}
+
+void MENU_InfoMenu()
+{
+    MENU_PrintGraph();
+
+}
+
+static void MENU_PrintGraph()
+{
+    uint8_t x, x0;
+    uint8_t y, y0;
+
+    uint16_t highTemp;
+    uint16_t totalTime;
+    uint16_t temp, t;
+    float ratio;
+    float graphWidthRatio;
+    float graphHeightRatio;
+    totalTime = SYS_GetTotalTime();
+    highTemp = SYS_GetReflowTemp();
+    graphWidthRatio = (float)SSD1306_WIDTH/(float)totalTime;
+    graphHeightRatio = (float)45/(float)highTemp;
+
+    //Preheat slope
+    t = SYS_GetPreHeatTime();
+    ratio = (float)t/(float)totalTime;
+    x = ratio * totalTime * graphWidthRatio;
+    temp = SYS_GetPreHeatTemp();
+    ratio = (float)temp/(float)highTemp;
+    y = ratio*highTemp*graphHeightRatio;
+    ssd1306_DrawLine(0,SSD1306_HEIGHT-0,x,SSD1306_HEIGHT-y,White);
+    ssd1306_DrawLine(x,SSD1306_HEIGHT,x,SSD1306_HEIGHT-y,White);
+
+    //Soak slope
+    x0 = x;
+    y0 = y;
+    t = SYS_GetSoakTime();
+    ratio = (float)t/(float)totalTime;
+    x = (ratio * totalTime*graphWidthRatio) + x0;
+    temp = SYS_GetSoakTemp();
+    ratio = (float)temp/(float)highTemp;
+    y = (ratio*highTemp*graphHeightRatio);
+    ssd1306_DrawLine(x0,SSD1306_HEIGHT-y0,x,SSD1306_HEIGHT-y,White);
+    ssd1306_DrawLine(x,SSD1306_HEIGHT,x,SSD1306_HEIGHT-y,White);
+
+    //Reflow slope
+    x0 = x;
+    y0 = y;
+    t = SYS_GetReflowTime();
+    ratio = (float)t/(float)totalTime/2.0;
+    x = ((ratio * totalTime)*graphWidthRatio) + x0;
+    temp = SYS_GetReflowTemp();
+    ratio = (float)temp/(float)highTemp;
+    y = ratio*highTemp*graphHeightRatio;
+    ssd1306_DrawLine(x0,SSD1306_HEIGHT-y0,x,SSD1306_HEIGHT-y,White);
+
+    ratio = (float)t/(float)totalTime/2.0;
+    x0 = (ratio * totalTime*graphWidthRatio) + x;
+    ratio = (float)temp/(float)highTemp;
+    y = ratio*highTemp*graphHeightRatio;
+    ssd1306_DrawLine(x,SSD1306_HEIGHT-y,x0,SSD1306_HEIGHT-y0,White);
+    ssd1306_DrawLine(x0,SSD1306_HEIGHT,x0,SSD1306_HEIGHT-y0,White);
+
+    //Cool slope
+    x = totalTime * graphWidthRatio;
+    ssd1306_DrawLine(x0,SSD1306_HEIGHT-y0,x,SSD1306_HEIGHT,White);
 
 
 }
@@ -260,12 +482,25 @@ void MENU_Init()
 
 void MENU_Process()
 {
+    static uint32_t refreshTimer;
+
+    if ( HAL_GetTick() - refreshTimer > REFRESH_PERIOD )
+    {
+        menuNeedRefresh = true;
+        refreshTimer = HAL_GetTick();
+    }
 
     if ( menuNeedRefresh || cursorPosChanged )
     {
-        MENU_PrintMenu(currentPage);
+        if ( currentPage != lastPage || cursorPosChanged )
+        {
+            MENU_PrintMenu(currentPage);
+            lastPage = currentPage;
+        }
+        menuCallbackFnc[currentPage]();
         menuNeedRefresh = false;
         cursorPosChanged = false;
+        ssd1306_UpdateScreen();
     }
 }
 
@@ -297,16 +532,30 @@ void MENU_Action(MENU_Action_e action)
                 switch (item->actionType)
                 {
                     case  ITEM_NAVIGATION:
-                    MENU_Goto(item->nextMenu);
+                        lastPosition = currentPosition;
+                        currentPosition = 0;
+                        MENU_Goto(item->nextMenu);
+                        if (item->callbackFnc != NULL)
+                        {
+                            item->callbackFnc(NULL);
+                        }
                     break;
+
                     case  ITEM_EDIT_VARIABLE:
                     if ( item->callbackFnc != NULL )
                     {
-                        item->callbackFnc(&editVariablePtr);
+                        // The callback fnc must set the address of the variable to be modified
+                        item->callbackFnc((void *)&editVariablePtr);
                         cursorMode = MODE_EDIT;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
+
+                    case ITEM_ACTION :
+                        item->callbackFnc(NULL);
+                    break;
+
                     default:
                     break;
                 }
@@ -326,6 +575,7 @@ void MENU_Action(MENU_Action_e action)
                     {
                         *editVariablePtr += 10;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
                 case  ACTION_DOWN:
@@ -333,6 +583,7 @@ void MENU_Action(MENU_Action_e action)
                     {
                         *editVariablePtr -= 10;
                         menuNeedRefresh = true;
+                        cursorPosChanged = true;
                     }
                     break;
                 case  ACTION_CLICK:
@@ -341,10 +592,32 @@ void MENU_Action(MENU_Action_e action)
                     // Release the variable
                     editVariablePtr = NULL;
                     MENU_Goto(item->nextMenu);
+                    cursorPosChanged = true;
                     break;
                 default:
                     break;
             }
         }
     }
+}
+
+void MENU_PrintDots(uint16_t *data, uint8_t size)
+{
+    float ratio;
+    //Clear screen
+    ratio = 64.0/255.0;
+    for(int x=0; x<SSD1306_WIDTH; x++)
+    {
+        ssd1306_DrawPixel(x, 64-(data[x]*ratio), White);
+    }
+}
+
+void MENU_PrintTempLine(uint16_t x, uint16_t y)
+{
+    ssd1306_DrawLine(x, 64, x, 64-y, White);
+}
+
+void MENU_RefreshMenu()
+{
+    menuNeedRefresh = true;
 }

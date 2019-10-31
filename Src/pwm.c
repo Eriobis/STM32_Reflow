@@ -110,7 +110,7 @@ void PWM_Init(void)
     pwmGPIO_Pin = GPIO_PIN_6;
     PWM_SetGPIO();
     pwmStarted = false;
-    frequency = 5;
+    frequency = 20; // in Hz
     dutyCycle = 0;
     pwmPeriod = ((float)1000.0/(float)frequency);
 }

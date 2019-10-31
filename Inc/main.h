@@ -65,9 +65,9 @@
 #define ENCODER_B_Port      GPIOC
 #define ENCODER_SW_Pin      GPIO_PIN_1
 #define ENCODER_SW_Port     GPIOC
-#define MAX31855_CS_Pin     GPIO_PIN_4
+#define MAX31855_CS_Pin     GPIO_PIN_1
 #define MAX31855_CS_Port    GPIOA
-#define MAX6675_CS_Pin      GPIO_PIN_4
+#define MAX6675_CS_Pin      GPIO_PIN_1
 #define MAX6675_CS_Port     GPIOA
 
 /* ########################## Assert Selection ############################## */
