@@ -45,28 +45,21 @@
 #include "menu.h"
 #include "pwm.h"
 #include "system.h"
+#include "encoder.h"
 
-typedef enum __ENCODER_State_e
-{
-    ENC_STATE_UNKNOWN,
-    ENC_STATE_11,
-    ENC_STATE_01,
-    ENC_STATE_00,
-    ENC_STATE_10,
-}ENCODER_State_e;
 
 /* Private variables ---------------------------------------------------------*/
 
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
-ENCODER_State_e encoderState;
+UART_HandleTypeDef huart2;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void EncoderRead(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
+static void UART2_Init(void);
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -75,9 +68,7 @@ int main(void)
     /* MCU Configuration----------------------------------------------------------*/
     uint32_t encoderSwitchTimer = 0;
     uint32_t encoderSwitchPeriod = 100;
-    
-    encoderState = ENC_STATE_UNKNOWN;
-
+    char printBuff[128];
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
@@ -86,13 +77,14 @@ int main(void)
     MX_GPIO_Init();
     MX_I2C1_Init();
     MX_SPI1_Init();
+    UART2_Init();
     SYS_Init();
     PWM_Init();
     MENU_Init();
     
     while (1)
     {
-    	// Handle any pending action for the menu
+        // Handle any pending action for the menu
         MENU_Process();
         // Update the system variables
         SYS_Process();
@@ -108,110 +100,12 @@ int main(void)
                 MENU_Action(ACTION_CLICK);
                 encoderSwitchPeriod = 500;
             }
+            sprintf(printBuff, "$%d %d;", (uint16_t)SYS_GetActualTemp(), (uint16_t)SYS_GetActualSetpoint());
+            HAL_UART_Transmit(&huart2, (uint8_t*)printBuff, strlen(printBuff), 20);
         }
     }
 }
 
-static void EncoderRead()
-{
-    static int8_t clockwiseCnt = 0;
-    static int8_t counterClockwiseCnt = 0;
-    GPIO_PinState val1, val2;
-    val1 = HAL_GPIO_ReadPin(ENCODER_A_Port,ENCODER_A_Pin);
-    val2 = HAL_GPIO_ReadPin(ENCODER_B_Port,ENCODER_B_Pin);
-
-    switch (encoderState)
-    {
-        case ENC_STATE_UNKNOWN :
-            if ( val1 && val2 )
-            {
-                encoderState = ENC_STATE_11;
-            }
-            else if ( val1 )
-            {
-                encoderState = ENC_STATE_01;
-            }
-            else if ( val2 )
-            {
-                encoderState = ENC_STATE_10;
-            }
-            else
-            {
-                encoderState = ENC_STATE_00;
-            }
-        break;
-        case ENC_STATE_00 :
-            if ( val1 )
-            {
-                encoderState = ENC_STATE_01;
-                counterClockwiseCnt = 0;
-                clockwiseCnt++;
-            }
-            else if ( val2 )
-            {
-                encoderState = ENC_STATE_10;
-                clockwiseCnt = 0;
-                counterClockwiseCnt++;
-            }
-        break;
-        case ENC_STATE_01 :
-            if ( !val1 )
-            {
-                encoderState = ENC_STATE_00;
-                counterClockwiseCnt = 0;
-                clockwiseCnt++;
-            }
-            else if ( val2 )
-            {
-                encoderState = ENC_STATE_11;
-                clockwiseCnt = 0;
-                counterClockwiseCnt++;
-            }
-        break;
-        case ENC_STATE_11 :
-            if ( !val1 )
-            {
-                encoderState = ENC_STATE_10;
-                counterClockwiseCnt = 0;
-                clockwiseCnt++;
-            }
-            else if ( !val2 )
-            {
-                encoderState = ENC_STATE_01;
-                clockwiseCnt = 0;
-                counterClockwiseCnt++;
-            }
-        break;
-        case ENC_STATE_10 :
-            if ( val1 )
-            {
-                encoderState = ENC_STATE_11;
-                counterClockwiseCnt = 0;
-                clockwiseCnt++;
-            }
-            else if ( !val2 )
-            {
-                encoderState = ENC_STATE_00;
-                clockwiseCnt = 0;
-                counterClockwiseCnt++;
-            }
-        break;
-    }
-
-
-    if (clockwiseCnt > 2)
-    {
-      MENU_Action(ACTION_DOWN);
-      clockwiseCnt = 0;
-      counterClockwiseCnt = 0;
-    }
-    else if (counterClockwiseCnt > 2)
-    {
-      MENU_Action(ACTION_UP);
-      clockwiseCnt = 0;
-      counterClockwiseCnt = 0;
-    }
-}
 
 /** System Clock Configuration
 */
@@ -272,6 +166,19 @@ void SystemClock_Config(void)
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+// UART2 Init
+static void UART2_Init(void)
+{
+
+	__HAL_RCC_USART2_CLK_ENABLE();
+
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	HAL_UART_Init(&huart2);
+}
+
 /* I2C1 init function */
 static void MX_I2C1_Init(void)
 {
@@ -307,7 +214,7 @@ static void MX_I2C1_Init(void)
 /* SPI1 init function */
 static void MX_SPI1_Init(void)
 {
-	__HAL_RCC_SPI2_CLK_ENABLE();
+    __HAL_RCC_SPI2_CLK_ENABLE();
 
     /* SPI1 parameter configuration*/
     hspi1.Instance = SPI2;
@@ -407,7 +314,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
         case  GPIO_PIN_2:
         case  GPIO_PIN_3:
-          EncoderRead();
+          EncoderHandle();
             break;
         default:
             break;
