@@ -23,13 +23,13 @@
 
 typedef struct _SYS_Profile_e
 {
-    uint16_t PreHeatTime;
-    uint16_t PreHeatTemp;
     uint16_t PreHeatTempIndex;
     uint16_t SoakTime;
     uint16_t SoakTemp;
+    uint16_t SoakTempMax;
     uint16_t ReflowTime;
     uint16_t ReflowTemp;
+    uint16_t PeakTemp;
     uint16_t CoolingTime;
     uint16_t TotalTime;
     uint16_t SetpointTime;
@@ -47,17 +47,14 @@ void            SYS_Init                (void);
 void            SYS_Start               (void);
 void            SYS_ManStart            (void);
 void            SYS_Stop                (void);
-void            SYS_GetPreHeatTimePtr   (uint16_t** val);
-void            SYS_GetPreHeatTempPtr   (uint16_t** val);
 void            SYS_GetSoakTimePtr      (uint16_t** val);
 void            SYS_GetSoakTempPtr      (uint16_t** val);
 void            SYS_GetReflowTimePtr    (uint16_t** val);
 void            SYS_GetReflowTempPtr    (uint16_t** val);
+void            SYS_GetPeakTempPtr      (uint16_t** val);
 void            SYS_GetCoolingTimePtr   (uint16_t** val);
 void            SYS_GetFixedTempPtr     (uint16_t** val);
 uint16_t        SYS_GetTotalTime        (void);
-uint16_t        SYS_GetPreHeatTime      (void);
-uint16_t        SYS_GetPreHeatTemp      (void);
 uint16_t        SYS_GetSoakTime         (void);
 uint16_t        SYS_GetSoakTemp         (void);
 uint16_t        SYS_GetReflowTime       (void);
@@ -66,9 +63,11 @@ uint16_t        SYS_GetCoolingTime      (void);
 uint16_t        SYS_GetFixedTemp        (void);
 SYS_Profile_e   *SYS_GetProfile         (void);
 float           SYS_GetActualTemp       (void);
+float           SYS_GetActualSetpoint   (void);
+float           SYS_GetActualRate       (void);
 void            SYS_FanStop             (void);
 void            SYS_FanStart            (void);
-
+char            *SYS_GetCurrentStateStr (void);
 /* ------------------------------------------------------------------------------------------------------------------*/
 
 #endif//__SYSTEM_H__

@@ -125,12 +125,11 @@ const MENU_Item_t MENU_SettingsMenuItems[] =
     { "..Back",        NULL,                            MAIN_MENU,       ITEM_NAVIGATION,       UNIT_NO_UNIT    },
     { "View Settings", NULL,                            SETTING_MENU,    ITEM_NAVIGATION,       UNIT_NO_UNIT    },
     { "Fixed Temp",    (void*)SYS_GetFixedTempPtr,      SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
-    { "Preheat time",  (void*)SYS_GetPreHeatTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
-    { "Preheat temp",  (void*)SYS_GetPreHeatTempPtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Soak time",     (void*)SYS_GetSoakTimePtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Soak temp",     (void*)SYS_GetSoakTempPtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Reflow time",   (void*)SYS_GetReflowTimePtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    },
     { "Reflow temp",   (void*)SYS_GetReflowTempPtr,     SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
+	{ "Peak temp",     (void*)SYS_GetPeakTempPtr,       SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_DEG        },
     { "Cooling time",  (void*)SYS_GetCoolingTimePtr,    SETTING_MENU,    ITEM_EDIT_VARIABLE,    UNIT_SECONDS    }
 };
 
@@ -354,30 +353,42 @@ void MENU_StartMenu()
 
 void MENU_RunMenu()
 {
-    static char TempInfoStr1[32];
-    static char TempInfoStr2[32];
-    SYS_Profile_e *profile;
-    float ratio;
+    static char TempInfoStr[32];
+    //static char TempInfoStr2[32];
+    //SYS_Profile_e *profile;
+    int rate;
     uint16_t temp;
 
-    profile = SYS_GetProfile();
-    MENU_PrintDots(profile->SetpointArray, NB_OF_TEMP_POINTS);
-    ratio = (float)GRAPH_MAX_HEIGHT/(float)profile->ReflowTemp;
-    for(int x=0; x<=profile->SetpointIndex; x++)
-    {
-        MENU_PrintTempLine(x, (uint16_t)((float)profile->SetpointArray[x]*(float)ratio));
-    }
+// Commented lines to print the graph and the actual setpoint
+
+//    profile = SYS_GetProfile();
+//    MENU_PrintDots(profile->SetpointArray, NB_OF_TEMP_POINTS);
+//    ratio = (float)GRAPH_MAX_HEIGHT/(float)profile->ReflowTemp;
+//    for(int x=0; x<=profile->SetpointIndex; x++)
+//    {
+//        MENU_PrintTempLine(x, (uint16_t)((float)profile->SetpointArray[x]*(float)ratio));
+//    }
+
+    sprintf(TempInfoStr, "--REFLOW RUNNING--", temp);
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString(TempInfoStr, Font_7x10, White);
 
     temp = (uint16_t)SYS_GetActualTemp();
-    sprintf(TempInfoStr1, "T =% 3u*C", temp);
-    ssd1306_SetCursor(0, 0);
-    ssd1306_WriteString(TempInfoStr1, Font_7x10, White);
+    sprintf(TempInfoStr, "Temp =% 3u*C", temp);
+    ssd1306_SetCursor(0, 12);
+    ssd1306_WriteString(TempInfoStr, Font_7x10, White);
 
-    sprintf(TempInfoStr2, "S =% 3u*C", profile->SetpointArray[profile->SetpointIndex]);
-    ssd1306_SetCursor(0, 10);
-    ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
+    sprintf(TempInfoStr, "Setpoint = % 3u*C", (uint16_t)SYS_GetActualSetpoint());
+    ssd1306_SetCursor(0, 22);
+    ssd1306_WriteString(TempInfoStr, Font_7x10, White);
+    rate = (int)(SYS_GetActualRate()*1000);
+    sprintf(TempInfoStr, "Rate =%d.%03u*C/s", rate/1000, (uint16_t)abs(rate)%1000);
+    ssd1306_SetCursor(0, 32);
+    ssd1306_WriteString(TempInfoStr, Font_7x10, White);
 
-    //ssd1306_UpdateScreen();
+    sprintf(TempInfoStr, "--> %s      ", SYS_GetCurrentStateStr());
+    ssd1306_SetCursor(0, 50);
+    ssd1306_WriteString(TempInfoStr, Font_7x10, White);
 }
 
 void MENU_ManRunMenu()
@@ -393,13 +404,11 @@ void MENU_ManRunMenu()
     sprintf(TempInfoStr2, "Setpoint =% 3u*C", SYS_GetFixedTemp());
     ssd1306_SetCursor(0, 5*Font_7x10.FontHeight);
     ssd1306_WriteString(TempInfoStr2, Font_7x10, White);
-    //ssd1306_UpdateScreen();
 }
 
 void MENU_InfoMenu()
 {
     MENU_PrintGraph();
-
 }
 
 static void MENU_PrintGraph()
@@ -418,26 +427,15 @@ static void MENU_PrintGraph()
     graphWidthRatio = (float)SSD1306_WIDTH/(float)totalTime;
     graphHeightRatio = (float)45/(float)highTemp;
 
-    //Preheat slope
-    t = SYS_GetPreHeatTime();
-    ratio = (float)t/(float)totalTime;
-    x = ratio * totalTime * graphWidthRatio;
-    temp = SYS_GetPreHeatTemp();
-    ratio = (float)temp/(float)highTemp;
-    y = ratio*highTemp*graphHeightRatio;
-    ssd1306_DrawLine(0,SSD1306_HEIGHT-0,x,SSD1306_HEIGHT-y,White);
-    ssd1306_DrawLine(x,SSD1306_HEIGHT,x,SSD1306_HEIGHT-y,White);
-
     //Soak slope
-    x0 = x;
-    y0 = y;
+    x0 = 0;
     t = SYS_GetSoakTime();
     ratio = (float)t/(float)totalTime;
     x = (ratio * totalTime*graphWidthRatio) + x0;
     temp = SYS_GetSoakTemp();
     ratio = (float)temp/(float)highTemp;
     y = (ratio*highTemp*graphHeightRatio);
-    ssd1306_DrawLine(x0,SSD1306_HEIGHT-y0,x,SSD1306_HEIGHT-y,White);
+    ssd1306_DrawLine(x0,SSD1306_HEIGHT-y,x,SSD1306_HEIGHT-y,White);
     ssd1306_DrawLine(x,SSD1306_HEIGHT,x,SSD1306_HEIGHT-y,White);
 
     //Reflow slope

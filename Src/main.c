@@ -47,7 +47,6 @@
 #include "system.h"
 #include "encoder.h"
 
-
 /* Private variables ---------------------------------------------------------*/
 
 I2C_HandleTypeDef hi2c1;
@@ -55,6 +54,7 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* Private function prototypes -----------------------------------------------*/
+
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
@@ -68,7 +68,7 @@ int main(void)
     /* MCU Configuration----------------------------------------------------------*/
     uint32_t encoderSwitchTimer = 0;
     uint32_t encoderSwitchPeriod = 100;
-    char printBuff[128];
+    char printBuff[32]; // For graph plotting with serial plotter
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
     /* Configure the system clock */
@@ -100,6 +100,7 @@ int main(void)
                 MENU_Action(ACTION_CLICK);
                 encoderSwitchPeriod = 500;
             }
+            // Those lines are for graph plotting
             sprintf(printBuff, "$%d %d;", (uint16_t)SYS_GetActualTemp(), (uint16_t)SYS_GetActualSetpoint());
             HAL_UART_Transmit(&huart2, (uint8_t*)printBuff, strlen(printBuff), 20);
         }
@@ -107,8 +108,7 @@ int main(void)
 }
 
 
-/** System Clock Configuration
-*/
+/** System Clock Configuration */
 void SystemClock_Config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -129,7 +129,7 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 
       /**Initializes the CPU, AHB and APB busses clocks
@@ -143,7 +143,7 @@ void SystemClock_Config(void)
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C1;
@@ -170,13 +170,13 @@ void SystemClock_Config(void)
 static void UART2_Init(void)
 {
 
-	__HAL_RCC_USART2_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE();
 
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 115200;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	HAL_UART_Init(&huart2);
+    huart2.Instance = USART2;
+    huart2.Init.BaudRate = 115200;
+    huart2.Init.Mode = UART_MODE_TX_RX;
+    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+    HAL_UART_Init(&huart2);
 }
 
 /* I2C1 init function */
@@ -193,21 +193,21 @@ static void MX_I2C1_Init(void)
     hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     if (HAL_I2C_Init(&hi2c1) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 
       /**Configure Analogue filter
       */
     if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 
       /**Configure Digital filter
       */
     if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 }
 
@@ -231,7 +231,7 @@ static void MX_SPI1_Init(void)
     hspi1.Init.CRCPolynomial = 7;
     if (HAL_SPI_Init(&hspi1) != HAL_OK)
     {
-      _Error_Handler(__FILE__, __LINE__);
+        _Error_Handler(__FILE__, __LINE__);
     }
 }
 
@@ -356,13 +356,5 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 
 #endif
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
